@@ -1,0 +1,55 @@
+name: Update Currency Rates & Deploy
+
+on:
+  # Запуск по расписанию: ежедневно в 14:00 UTC (около 19:00/20:00 KZT)
+  schedule:
+    - cron: '0 14 * * *'
+  # Возможность запуска вручную через интерфейс GitHub
+  workflow_dispatch:
+  # Запуск при push в ветку main (для отладки и первого деплоя)
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        # Настройка, позволяющая action-у делать коммиты
+        with:
+          fetch-depth: 0 
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          # Используйте совместимую версию Python
+          python-version: '3.11' 
+
+      - name: Install dependencies
+        # Установка зависимостей из requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Run ETL Script
+        # Запуск вашего скрипта
+        run: python scripts/update_rates.py
+        
+      - name: Configure Git for Auto Commit
+        # Настройка имени и email для автоматического коммита от имени бота
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+      - name: Commit and Push new HTML
+        # Использование action для автоматического коммита измененного index.html
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          # Коммитим только сгенерированный файл
+          file_pattern: 'index.html'
+          commit_message: "Automatic update: Currency rates"
+          branch: main
