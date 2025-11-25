@@ -11,9 +11,11 @@ MAIN_CURRENCIES = ['USD', 'EUR', 'RUB', 'AED', 'AMD', 'AUD', 'AZN', 'BRL', 'BYN'
 
 def generate_json_api(all_rates):
     """Генерирует и сохраняет файл api/latest.json."""
+    # Получаем дату курса из первого элемента
     first_rate = next(iter(all_rates.values()), None)
     course_date = first_rate['course_date'] if first_rate else datetime.now().strftime(DATE_FORMAT)
 
+    # Форматирование данных для JSON
     json_output = {
         'metadata': {
             'source': 'National Bank of Kazakhstan (NSI_NBRK_CRCY_COURSE)',
@@ -23,8 +25,10 @@ def generate_json_api(all_rates):
         'rates': all_rates
     }
     
+    # Создаем папку api, если она не существует
     os.makedirs('api', exist_ok=True)
     
+    # Сохраняем файл
     with open('api/latest.json', 'w', encoding='utf-8') as f:
         json.dump(json_output, f, ensure_ascii=False, indent=4)
     
@@ -44,9 +48,11 @@ def generate_html_page(all_rates):
     first_rate = next(iter(all_rates.values()))
     course_date_str = first_rate['course_date']
     
+    # Контекст для Jinja2
     context = {
         'rates': main_rates.values(),
-        'course_date': course_date_str
+        'course_date': course_date_str,
+        'MESSAGES': [] # <-- КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Добавление отсутствующей переменной.
     }
     
     file_loader = FileSystemLoader('.')
