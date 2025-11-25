@@ -16,35 +16,64 @@ DATE_FORMAT = '%Y-%m-%d'
 # Основные валюты для главной страницы (Фаза 1.3)
 MAIN_CURRENCIES = ['USD', 'EUR', 'RUB', 'AED', 'AMD', 'AUD', 'AZN', 'BRL', 'BYN', 'CAD']
 
-# --- Функции ---
+# --- Основные функции ---
 
-# --- Функции ---
+def get_latest_exchange_rates():
+    """
+    Получает актуальный справочник курсов валют из НБ РК за последние 3 дня.
+    """
+    client = Client(WSDL_URL)
+
+    # Запрашиваем данные за короткий период
+    end_date = datetime.now()
+    begin_date = end_date - timedelta(days=3)
+
+    try:
+        # Формируем SOAP-запрос
+        response = client.service.GET_GUIDE(
+            guideCode=TARGET_GUIDE_CODE,
+            type='FULL',
+            beginDate=begin_date.strftime(DATE_FORMAT),
+            endDate=end_date.strftime(DATE_FORMAT)
+        )
+    except Fault as e:
+        print(f"SOAP Fault: {e}")
+        return None
+
+    # Проверка на ошибку в ответе сервиса
+    if response.errCode != 0:
+        print(f"Service Error: {response.errMsg}")
+        return None
+
+    # Результат - это строка с XML (CDATA)
+    xml_data = response.result
+    return xml_data
+
 
 def parse_xml_data(xml_data):
     """
-    Разбирает XML-ответ и извлекает курсы валют.
+    Разбирает XML-ответ и извлекает курсы валют. (Исправлено для работы с Namespaces)
     """
     root = etree.fromstring(xml_data.encode('utf-8'))
     
-    # Namespace для элементов CommonInfo и Entity (ИСПРАВЛЕНО: Префикс s: должен использоваться для всех элементов)
+    # Namespace для элементов Envelope и Body
     ns_map = {'s': 'http://www.w3.org/2003/05/soap-envelope'}
     
     # 1. Извлечение данных курсов
     rates_data = {}
     
-    # ИСПРАВЛЕНИЕ 1: XPath для Entity теперь: './s:Body/s:Entity'
+    # Используем префикс s: для всех элементов, принадлежащих пространству имен.
     entities = root.xpath('./s:Body/s:Entity', namespaces=ns_map)
 
     # Перебираем все сущности (курсы)
     for entity in entities:
-        # ИСПРАВЛЕНИЕ 2: Получение пользовательских реквизитов: './s:EntityCustom'
+        # Получение пользовательских реквизитов 
         try:
             custom = entity.xpath('./s:EntityCustom', namespaces=ns_map)[0]
         except IndexError:
-            # Пропускаем, если нет пользовательских реквизитов (маловероятно, но безопасно)
             continue
         
-        # Извлечение данных (теперь с префиксом 's:' для всех элементов)
+        # Извлечение данных
         curr_code = custom.xpath('./s:CurrCode', namespaces=ns_map)[0].text.strip()
         course_date_str = custom.xpath('./s:CourseDate', namespaces=ns_map)[0].text.strip()
         course_value_str = custom.xpath('./s:Course', namespaces=ns_map)[0].text.strip().replace(',', '.')
@@ -70,6 +99,8 @@ def parse_xml_data(xml_data):
     
     return rates_data
 
+# --- Функции для генерации контента ---
+
 def generate_json_api(all_rates):
     """
     Генерирует и сохраняет файл api/latest.json (Фаза 1.2).
@@ -83,8 +114,8 @@ def generate_json_api(all_rates):
     json_output = {
         'metadata': {
             'source': 'National Bank of Kazakhstan (NSI_NBRK_CRCY_COURSE)',
-            'updated_at': datetime.now().isoformat(), # Дата обновления самого файла
-            'course_date': course_date # Дата установки курса
+            'updated_at': datetime.now().isoformat(), 
+            'course_date': course_date 
         },
         'rates': all_rates
     }
