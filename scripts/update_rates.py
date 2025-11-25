@@ -13,8 +13,8 @@ TARGET_GUIDE_CODE = 'NSI_NBRK_CRCY_COURSE'
 # Формат даты в SOAP-запросе: YYYY-MM-DD
 DATE_FORMAT = '%Y-%m-%d'
 
-# Основные валюты для главной страницы
-MAIN_CURRENCIES = ['USD', 'EUR', 'RUB', 'KZT', 'AED', 'AMD', 'AUD', 'AZN', 'BRL', 'BYN', 'CAD']
+# Основные валюты для главной страницы (Фаза 1.3)
+MAIN_CURRENCIES = ['USD', 'EUR', 'RUB', 'AED', 'AMD', 'AUD', 'AZN', 'BRL', 'BYN', 'CAD']
 
 # --- Функции ---
 
@@ -70,14 +70,17 @@ def parse_xml_data(xml_data):
 
     # Перебираем все сущности (курсы)
     for entity in entities:
-        # [cite_start]Получение пользовательских реквизитов [cite: 53]
+        # Получение пользовательских реквизитов 
         custom = entity.xpath('./EntityCustom', namespaces=ns_map)[0]
         
         # Извлечение данных
         curr_code = custom.xpath('./CurrCode', namespaces=ns_map)[0].text.strip()
-        [cite_start]course_date_str = custom.xpath('./CourseDate', namespaces=ns_map)[0].text.strip()
-        [cite_start]course_value_str = custom.xpath('./Course', namespaces=ns_map)[0].text.strip().replace(',', '.')
-        [cite_start]corellation_value = int(custom.xpath('./Corellation', namespaces=ns_map)[0].text.strip())
+        
+        # Строка, которая ранее вызывала ошибку:
+        course_date_str = custom.xpath('./CourseDate', namespaces=ns_map)[0].text.strip()
+        
+        course_value_str = custom.xpath('./Course', namespaces=ns_map)[0].text.strip().replace(',', '.')
+        corellation_value = int(custom.xpath('./Corellation', namespaces=ns_map)[0].text.strip())
         
         # Преобразование значений
         try:
@@ -85,24 +88,16 @@ def parse_xml_data(xml_data):
         except ValueError:
             course = 0.0
 
-        # Сохраняем только самую свежую запись для каждой валюты.
-        # В данном случае, мы полагаемся на то, что сервис возвращает курсы в хронологическом порядке, 
-        # но для надежности берем самый последний курс.
-        
-        # [cite_start]Поскольку CourseDate (дата курса) - это самая важная метрика актуальности [cite: 13]
-        
-        # Если валюта KZT (тенге), пропускаем ее, т.к. KZT/KZT = 1, и она не нужна
+        # Если валюта KZT (тенге), пропускаем ее
         if curr_code == 'KZT':
             continue
 
-        # В идеале нужно парсить дату, но для простого проекта берем первый курс
-        # и полагаемся на то, что это самый актуальный курс, предоставленный НБ РК.
-
+        # Сохраняем данные
         rates_data[curr_code] = {
             'code': curr_code,
             'course': course,
             'corellation': corellation_value,
-            'course_date': course_date_str # Сохраняем дату для дальнейшего использования
+            'course_date': course_date_str # (Фаза 1.1)
         }
     
     return rates_data
@@ -111,19 +106,19 @@ def parse_xml_data(xml_data):
 
 def generate_json_api(all_rates):
     """
-    Генерирует и сохраняет файл api/latest.json.
+    Генерирует и сохраняет файл api/latest.json (Фаза 1.2).
     """
     
-    # Получаем дату курса из первого элемента (предполагаем, что она одинакова)
-    first_rate = next(iter(all_rates.values()))
+    # Получаем дату курса из первого элемента
+    first_rate = next(iter(all_rates.values()), None)
     course_date = first_rate['course_date'] if first_rate else datetime.now().strftime(DATE_FORMAT)
 
     # Форматирование данных для JSON
     json_output = {
         'metadata': {
             'source': 'National Bank of Kazakhstan (NSI_NBRK_CRCY_COURSE)',
-            'updated_date': datetime.now().isoformat(),
-            'course_date': course_date
+            'updated_at': datetime.now().isoformat(), # Дата обновления самого файла
+            'course_date': course_date # Дата установки курса
         },
         'rates': all_rates
     }
