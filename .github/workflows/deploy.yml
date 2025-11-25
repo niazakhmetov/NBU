@@ -11,6 +11,12 @@ on:
     branches:
       - main
 
+# ⭐ НОВЫЙ БЛОК: Установка необходимых разрешений для токена
+permissions:
+  contents: read
+  pages: write
+  id-token: write # <--- Это устраняет вашу ошибку
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -30,28 +36,23 @@ jobs:
           pip install -r requirements.txt
           
       - name: Run ETL Script
-        # Запуск вашего скрипта, который генерирует index.html в корне
         run: python scripts/update_rates.py
         
       - name: Setup Pages
-        # Настройка окружения Pages
         id: pages
         uses: actions/configure-pages@v5
 
       - name: Upload Artifact
-        # Загрузка сгенерированного index.html и всех других файлов в корне
         uses: actions/upload-pages-artifact@v3
         with:
-          # Указываем, что нужно загрузить все файлы из корня репозитория
           path: '.' 
           
   deploy:
     environment:
-      # Важное требование для официального развертывания Pages
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build # Зависит от успешного завершения этапа 'build'
+    needs: build
     
     steps:
       - name: Deploy to GitHub Pages
