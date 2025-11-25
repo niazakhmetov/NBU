@@ -20,68 +20,35 @@ MAIN_CURRENCIES = ['USD', 'EUR', 'RUB', 'AED', 'AMD', 'AUD', 'AZN', 'BRL', 'BYN'
 
 # --- Функции ---
 
-def get_latest_exchange_rates():
-    """
-    Получает актуальный справочник курсов валют из НБ РК за последние 3 дня.
-    (Исправлена передача параметров для Zeep)
-    """
-    client = Client(WSDL_URL)
-
-    # Запрашиваем данные за короткий период, чтобы получить последний курс
-    end_date = datetime.now()
-    begin_date = end_date - timedelta(days=3)
-
-    try:
-        # Формируем SOAP-запрос, передавая аргументы напрямую, 
-        # как того требует Zeep, согласно структуре WSDL.
-        response = client.service.GET_GUIDE(
-            guideCode=TARGET_GUIDE_CODE,
-            type='FULL',
-            beginDate=begin_date.strftime(DATE_FORMAT),
-            endDate=end_date.strftime(DATE_FORMAT)
-        )
-    except Fault as e:
-        print(f"SOAP Fault: {e}")
-        return None
-
-    # Проверка на ошибку в ответе сервиса
-    if response.errCode != 0:
-        print(f"Service Error: {response.errMsg}")
-        return None
-
-    # Результат - это строка с XML (CDATA)
-    xml_data = response.result
-    return xml_data
-
-
 def parse_xml_data(xml_data):
     """
     Разбирает XML-ответ и извлекает курсы валют.
     """
     root = etree.fromstring(xml_data.encode('utf-8'))
     
-    # Namespace для элементов CommonInfo и Entity
+    # Namespace для элементов CommonInfo и Entity (ИСПРАВЛЕНО: Префикс s: должен использоваться для всех элементов)
     ns_map = {'s': 'http://www.w3.org/2003/05/soap-envelope'}
     
     # 1. Извлечение данных курсов
     rates_data = {}
     
-    # XPath для Entity: /Envelope/Body/Entity
-    entities = root.xpath('./s:Body/Entity', namespaces=ns_map)
+    # ИСПРАВЛЕНИЕ 1: XPath для Entity теперь: './s:Body/s:Entity'
+    entities = root.xpath('./s:Body/s:Entity', namespaces=ns_map)
 
     # Перебираем все сущности (курсы)
     for entity in entities:
-        # Получение пользовательских реквизитов 
-        custom = entity.xpath('./EntityCustom', namespaces=ns_map)[0]
+        # ИСПРАВЛЕНИЕ 2: Получение пользовательских реквизитов: './s:EntityCustom'
+        try:
+            custom = entity.xpath('./s:EntityCustom', namespaces=ns_map)[0]
+        except IndexError:
+            # Пропускаем, если нет пользовательских реквизитов (маловероятно, но безопасно)
+            continue
         
-        # Извлечение данных
-        curr_code = custom.xpath('./CurrCode', namespaces=ns_map)[0].text.strip()
-        
-        # Строка, которая ранее вызывала ошибку:
-        course_date_str = custom.xpath('./CourseDate', namespaces=ns_map)[0].text.strip()
-        
-        course_value_str = custom.xpath('./Course', namespaces=ns_map)[0].text.strip().replace(',', '.')
-        corellation_value = int(custom.xpath('./Corellation', namespaces=ns_map)[0].text.strip())
+        # Извлечение данных (теперь с префиксом 's:' для всех элементов)
+        curr_code = custom.xpath('./s:CurrCode', namespaces=ns_map)[0].text.strip()
+        course_date_str = custom.xpath('./s:CourseDate', namespaces=ns_map)[0].text.strip()
+        course_value_str = custom.xpath('./s:Course', namespaces=ns_map)[0].text.strip().replace(',', '.')
+        corellation_value = int(custom.xpath('./s:Corellation', namespaces=ns_map)[0].text.strip())
         
         # Преобразование значений
         try:
@@ -98,12 +65,10 @@ def parse_xml_data(xml_data):
             'code': curr_code,
             'course': course,
             'corellation': corellation_value,
-            'course_date': course_date_str # (Фаза 1.1)
+            'course_date': course_date_str
         }
     
     return rates_data
-
-# --- Новые функции для Фазы 1 ---
 
 def generate_json_api(all_rates):
     """
