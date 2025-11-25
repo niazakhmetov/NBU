@@ -69,3 +69,32 @@ def generate_html_page(all_rates):
         print("Файл index.html успешно обновлен.")
     except Exception as e:
         print(f"Ошибка генерации index.html: {e}")
+
+def generate_about_page():
+    """Генерирует и сохраняет статическую страницу about.html."""
+    
+    # Для статической страницы about.html нам нужен только словарь MESSAGES
+    context = {
+        'MESSAGES': MESSAGES
+    }
+    
+    # Файлы шаблонов Jinja2 и окружение
+    file_loader = FileSystemLoader('.')
+    env = Environment(loader=file_loader)
+    
+    try:
+        template = env.get_template('about_template.html')
+        output = template.render(context)
+        
+        with open('about.html', 'w', encoding='utf-8') as f:
+            f.write(output)
+            
+        print("Файл about.html успешно сгенерирован.")
+    except Exception as e:
+        print(f"Ошибка генерации about.html: {e}")
+
+
+# ---
+# ВАЖНО: Мы удаляем старую функцию generate_html_page и переносим ее в main_workflow.py,
+# чтобы вызвать обе функции. Но сейчас мы просто обновим main_workflow.py.
+# ---
