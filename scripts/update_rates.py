@@ -18,9 +18,12 @@ MAIN_CURRENCIES = ['USD', 'EUR', 'RUB', 'AED', 'AMD', 'AUD', 'AZN', 'BRL', 'BYN'
 
 # --- Функции ---
 
+# --- Функции ---
+
 def get_latest_exchange_rates():
     """
     Получает актуальный справочник курсов валют из НБ РК за последние 3 дня.
+    (Исправлена передача параметров для Zeep)
     """
     client = Client(WSDL_URL)
 
@@ -29,15 +32,13 @@ def get_latest_exchange_rates():
     begin_date = end_date - timedelta(days=3)
 
     try:
-        # Формируем SOAP-запрос
+        # Формируем SOAP-запрос, передавая аргументы напрямую, 
+        # как того требует Zeep, согласно структуре WSDL.
         response = client.service.GET_GUIDE(
-            arg0={
-                'beginDate': begin_date.strftime(DATE_FORMAT),
-                'endDate': end_date.strftime(DATE_FORMAT),
-                'guideCode': TARGET_GUIDE_CODE,
-                # Используем FULL, чтобы получить все записи за период
-                'type': 'FULL'
-            }
+            guideCode=TARGET_GUIDE_CODE,
+            type='FULL',
+            beginDate=begin_date.strftime(DATE_FORMAT),
+            endDate=end_date.strftime(DATE_FORMAT)
         )
     except Fault as e:
         print(f"SOAP Fault: {e}")
