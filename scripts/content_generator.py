@@ -1,6 +1,7 @@
 # scripts/content_generator.py
 import os
 import json
+from i18n import MESSAGES
 from datetime import datetime
 from jinja2 import Environment, FileSystemLoader
 
@@ -52,7 +53,7 @@ def generate_html_page(all_rates):
     context = {
         'rates': main_rates.values(),
         'course_date': course_date_str,
-        'MESSAGES': [] # <-- КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Добавление отсутствующей переменной.
+        'MESSAGES': MESSAGES
     }
     
     file_loader = FileSystemLoader('.')
