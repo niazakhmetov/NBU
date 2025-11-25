@@ -44,6 +44,16 @@
             background-color: #ecf0f1;
             border-radius: 8px;
         }
+        .date-info {
+            font-size: 1.1em;
+            color: #27ae60;
+            margin-top: -10px; /* Сдвигаем вверх для лучшего расположения */
+            margin-bottom: 20px;
+            padding: 10px;
+            border-left: 5px solid #27ae60;
+            background-color: #e6ffee;
+            border-radius: 4px;
+        }
         .up { color: #27ae60; font-weight: bold; } /* Green */
         .down { color: #e74c3c; font-weight: bold; } /* Red */
         .neutral { color: #7f8c8d; } /* Gray */
@@ -60,11 +70,32 @@
             background-color: #3498db;
             color: white;
         }
+        /* Новый стиль для навигации */
+        nav {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        nav a {
+            margin-right: 15px;
+            text-decoration: none;
+            color: #3498db;
+            font-weight: bold;
+        }
+        nav a:hover {
+            color: #2980b9;
+        }
     </style>
 </head>
 <body>
     <header>
         <h1 data-key="title">{{ MESSAGES['ru']['title'] }}</h1>
+        
+        <nav>
+            <a href="index.html">Главная</a>
+            <a href="full_rates.html">Все курсы</a>
+            <a href="about.html">О платформе</a>
+        </nav>
         
         <div id="language-switcher">
             <button onclick="setLang('ru')">RU</button>
@@ -74,7 +105,11 @@
     </header>
     
     <main>
-        <p data-key="status_prefix">{{ MESSAGES['ru']['status_prefix'] }}: <span id="update-date">{{ last_update_date }}</span></p>
+        <p class="date-info">
+            Курсы валют актуальны на **{{ course_date }}** (официальная дата НБ РК).
+            Данные получены с официального SOAP-сервиса Национального Банка РК.
+        </p>
+        
         <p data-key="description">{{ MESSAGES['ru']['description'] }}</p>
 
         <table>
@@ -88,17 +123,9 @@
             <tbody>
                 {% for rate in rates %}
                 <tr>
-                    <td>{{ rate.currency }}</td>
-                    <td>{{ rate.rate }}</td>
-                    <td class="{{ rate.diff_class }}">
-                        {{ rate.diff }}
-                        <span class="diff-indicator">
-                            {% if rate.diff_class == 'up' %}▲
-                            {% elif rate.diff_class == 'down' %}▼
-                            {% else %}-
-                            {% endif %}
-                        </span>
-                    </td>
+                    <td>{{ rate.code }}</td> 
+                    <td>{{ "%.2f" | format(rate.course) }}</td> 
+                    <td>-</td> 
                 </tr>
                 {% endfor %}
             </tbody>
@@ -120,24 +147,20 @@
 
         function setLang(lang) {
             currentLang = lang;
-            // Обновляем атрибут lang для accessibility
             document.documentElement.lang = lang;
             
-            // Обновляем все элементы с атрибутом data-key
             document.querySelectorAll('[data-key]').forEach(element => {
                 const key = element.getAttribute('data-key');
                 if (MESSAGES_DATA[lang] && MESSAGES_DATA[lang][key]) {
                     if (element.tagName === 'TITLE') {
                         document.title = MESSAGES_DATA[lang][key];
                     } else {
-                        // Для ссылок обновляем текст
                         element.textContent = MESSAGES_DATA[lang][key];
                     }
                 }
             });
         }
 
-        // Установить язык по умолчанию при загрузке
         window.onload = () => setLang(currentLang);
     </script>
 </body>
