@@ -55,11 +55,9 @@ def parse_xml_data(xml_data):
         return {}
 
     root = etree.fromstring(xml_data.encode('utf-8'))
-    # Namespace для элементов Envelope и Body
     ns_map = {'s': 'http://www.w3.org/2003/05/soap-envelope'}
     rates_data = {}
     
-    # ИСПРАВЛЕНИЕ: Используем префикс s: для всех элементов
     entities = root.xpath('./s:Body/s:Entity', namespaces=ns_map)
 
     for entity in entities:
@@ -68,7 +66,6 @@ def parse_xml_data(xml_data):
         except IndexError:
             continue
         
-        # Извлечение данных с учетом Namespaces
         try:
             curr_code = custom.xpath('./s:CurrCode', namespaces=ns_map)[0].text.strip()
             course_date_str = custom.xpath('./s:CourseDate', namespaces=ns_map)[0].text.strip()
@@ -78,7 +75,6 @@ def parse_xml_data(xml_data):
             print(f"Предупреждение: Пропущен неполный элемент курса.")
             continue
         
-        # Расчет и округление
         try:
             course = float(course_value_str) / corellation_value
             course = round(course, 4)
@@ -93,7 +89,7 @@ def parse_xml_data(xml_data):
             'course': course,
             'corellation': corellation_value,
             'course_date': course_date_str,
-            # ДОБАВЛЕНО: Русское название из справочника
+            # КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Добавление русского названия
             'ru': CURRENCY_NAMES_RU.get(curr_code, curr_code) 
         }
     
