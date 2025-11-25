@@ -11,11 +11,11 @@ on:
     branches:
       - main
 
-# ⭐ НОВЫЙ БЛОК: Установка необходимых разрешений для токена
+# ⭐ Установка необходимых разрешений для токена (Оставляем как есть, это важно!)
 permissions:
   contents: read
   pages: write
-  id-token: write # <--- Это устраняет вашу ошибку
+  id-token: write
 
 jobs:
   build:
@@ -35,8 +35,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           
-      - name: Run ETL Script
-        run: python scripts/update_rates.py
+      - name: Run ETL Workflow # <--- ИЗМЕНЕНИЕ 1: Сменили название шага
+        run: python scripts/main_workflow.py # <--- ИЗМЕНЕНИЕ 2: Заменили файл запуска
         
       - name: Setup Pages
         id: pages
@@ -45,7 +45,7 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.' 
+          path: '.' # Загружаем весь репозиторий, включая index.html и папку api/
           
   deploy:
     environment:
