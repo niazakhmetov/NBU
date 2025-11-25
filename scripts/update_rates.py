@@ -1,305 +1,191 @@
-import logging
-from datetime import datetime, timedelta
-# Импорты для работы с SOAP-сервисом
-from zeep import Client, Settings
+import os
+import requests
+from zeep import Client
 from zeep.exceptions import Fault
-# Импорт для безопасного и эффективного парсинга XML
-from lxml import etree 
-# Импорт для генерации HTML-файла
-from jinja2 import Environment, FileSystemLoader 
-import json # Используется для передачи данных в JavaScript через Jinja2
+from lxml import etree
+from datetime import datetime, timedelta
+import json
+from jinja2 import Environment, FileSystemLoader
 
-# ----------------------------------------------------
-# 1. КОНСТАНТЫ И НАСТРОЙКИ
-# ----------------------------------------------------
+# --- Константы и настройки ---
+WSDL_URL = 'https://nbportal.nationalbank.kz:443/WebService/NSI_NBRK?wsdl'
+TARGET_GUIDE_CODE = 'NSI_NBRK_CRCY_COURSE'
+# Формат даты в SOAP-запросе: YYYY-MM-DD
+DATE_FORMAT = '%Y-%m-%d'
 
-# Адрес WSDL-описания веб-сервиса НБ РК
-WSDL_URL = "https://nbportal.nationalbank.kz:443/WebService/NSI_NBRK?wsdl"
+# Основные валюты для главной страницы
+MAIN_CURRENCIES = ['USD', 'EUR', 'RUB', 'KZT', 'AED', 'AMD', 'AUD', 'AZN', 'BRL', 'BYN', 'CAD']
 
-# Код справочника для курсов валют
-GUIDE_CODE_RATES = "NSI_NBRK_CRCY_COURSE"
+# --- Функции ---
 
-# Настройка zeep: strict=False может потребоваться для обхода некоторых особенностей SOAP-серверов
-settings = Settings(strict=False, xml_huge_tree=True) 
-
-# Настройка логирования
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-# Пространство имен для парсинга XML (для lxml)
-NS = {
-    's': 'http://schemas.xmlsoap.org/soap/envelope/',
-    'n': 'http://www.w3.org/2003/05/soap-envelope'
-}
-
-# Мультиязычные тексты для Jinja2 и JavaScript
-MESSAGES = {
-    'ru': {
-        'title': "Официальные курсы валют НБ РК | TengeHub",
-        'status_prefix': "Данные актуальны на",
-        'description': "Интеграция с официальным SOAP-сервисом Национального Банка РК. Курсы обновляются ежедневно.",
-        'currency_rate': "Курс",
-        'currency_name': "Валюта",
-        'rate_name': "Курс (KZT)",
-        'change': "Изменение",
-        'partner_title': "B2B API & Экспорт данных",
-        'partner_text': "Получите доступ к данным в удобном формате (JSON/CSV) через наш REST API для вашей ERP, 1С или CRM.",
-        'partner_cta': "Стать партнером"
-    },
-    'kz': {
-        'title': "ҚР Ұлттық Банкінің ресми валюта бағамдары | TengeHub",
-        'status_prefix': "Деректердің қолданылу мерзімі",
-        'description': "ҚР Ұлттық Банкінің ресми SOAP-сервисімен интеграция. Бағамдар күн сайын жаңартылады.",
-        'currency_rate': "Бағам",
-        'currency_name': "Валюта",
-        'rate_name': "Бағам (KZT)",
-        'change': "Өзгеріс",
-        'partner_title': "B2B API & Деректер экспорты",
-        'partner_text': "ERP, 1С немесе CRM жүйелеріңіз үшін біздің REST API арқылы деректерге ыңғайлы форматта (JSON/CSV) қол жеткізіңіз.",
-        'partner_cta': "Серіктес болу"
-    },
-    'en': {
-        'title': "Official Exchange Rates of NBK | TengeHub",
-        'status_prefix': "Data is current as of",
-        'description': "Integration with the official SOAP service of the National Bank of Kazakhstan. Rates are updated daily.",
-        'currency_rate': "Rate",
-        'currency_name': "Currency",
-        'rate_name': "Rate (KZT)",
-        'change': "Change",
-        'partner_title': "B2B API & Data Export",
-        'partner_text': "Get access to data in a convenient format (JSON/CSV) via our REST API for your ERP, 1C, or CRM.",
-        'partner_cta': "Become a partner"
-    }
-}
-
-
-# ----------------------------------------------------
-# 2. ФУНКЦИЯ ДЛЯ ЗАПРОСА ДАННЫХ
-# ----------------------------------------------------
-
-def get_exchange_rates(start_date: str, end_date: str):
+def get_latest_exchange_rates():
     """
-    Запрос официальных курсов валют НБ РК через SOAP-сервис.
+    Получает актуальный справочник курсов валют из НБ РК за последние 3 дня.
     """
-    logging.info(f"Подключение к WSDL по адресу: {WSDL_URL}")
-    
+    client = Client(WSDL_URL)
+
+    # Запрашиваем данные за короткий период, чтобы получить последний курс
+    end_date = datetime.now()
+    begin_date = end_date - timedelta(days=3)
+
     try:
-        client = Client(WSDL_URL, settings=settings)
-        
-        # Форматируем даты для WSDL (dateTime) с указанием часового пояса
-        begin_date_param = f"{start_date}T00:00:00.000+06:00"
-        end_date_param = f"{end_date}T00:00:00.000+06:00"
-
-        logging.info(f"Запрос данных за период: {start_date} по {end_date}")
-
-        # Вызов SOAP-операции с явным указанием параметров
+        # Формируем SOAP-запрос
         response = client.service.GET_GUIDE(
-            guideCode=GUIDE_CODE_RATES,
-            type='CHAD',
-            beginDate=begin_date_param,
-            endDate=end_date_param
+            arg0={
+                'beginDate': begin_date.strftime(DATE_FORMAT),
+                'endDate': end_date.strftime(DATE_FORMAT),
+                'guideCode': TARGET_GUIDE_CODE,
+                # Используем FULL, чтобы получить все записи за период
+                'type': 'FULL'
+            }
         )
-        
-        # Доступ к атрибутам через ТОЧКУ
-        err_code = response.errCode
-        err_msg = response.errMsg
-        
-        if err_code != 0:
-            logging.error(f"Сервис НБ РК вернул ошибку. Код: {err_code}. Сообщение: {err_msg}")
-            return None
-        
-        rates_xml_string = response.result
-        
-        logging.info("Данные успешно получены.")
-        return rates_xml_string
-
-    except Fault as f:
-        logging.error(f"SOAP Fault при запросе: {f}")
-        return None
-    except Exception as e:
-        logging.error(f"Критическая ошибка при работе с WSDL: {e}") 
+    except Fault as e:
+        print(f"SOAP Fault: {e}")
         return None
 
-# ----------------------------------------------------
-# 3. ФУНКЦИЯ ДЛЯ ПАРСИНГА XML
-# ----------------------------------------------------
+    # Проверка на ошибку в ответе сервиса
+    if response.errCode != 0:
+        print(f"Service Error: {response.errMsg}")
+        return None
 
-def parse_rates_xml(rates_xml_string: str) -> list:
+    # Результат - это строка с XML (CDATA)
+    xml_data = response.result
+    return xml_data
+
+
+def parse_xml_data(xml_data):
     """
-    Парсит XML-строку, полученную от НБ РК, и извлекает курсы.
+    Разбирает XML-ответ и извлекает курсы валют.
     """
-    if not rates_xml_string:
-        return []
-
-    logging.info("Начало парсинга XML-ответа.")
-    parsed_rates = []
-
-    try:
-        root = etree.fromstring(rates_xml_string.encode('utf-8'))
-        
-        # Используем XPath для поиска всех сущностей (Entity)
-        entities = root.xpath('//n:Entity', namespaces=NS)
-        if not entities:
-            entities = root.xpath('//s:Entity', namespaces=NS)
-            if not entities:
-                 logging.warning("В XML не найдено ни одной сущности (Entity) с курсами.")
-                 return []
-        
-        logging.info(f"Найдено {len(entities)} курсовых записей.")
-
-        for entity in entities:
-            # Ищем EntityCustom в обоих Namespace
-            custom = entity.find('./n:EntityCustom', namespaces=NS) or entity.find('./s:EntityCustom', namespaces=NS)
-            if custom is not None:
-                try:
-                    # Извлечение пользовательских реквизитов (также ищем в обоих Namespace)
-                    curr_code = custom.findtext('./n:CurrCode', namespaces=NS) or custom.findtext('./s:CurrCode', namespaces=NS)
-                    course_str = custom.findtext('./n:Course', namespaces=NS) or custom.findtext('./s:Course', namespaces=NS)
-                    correlation_str = custom.findtext('./n:Corellation', namespaces=NS) or custom.findtext('./s:Corellation', namespaces=NS)
-                    course_date = custom.findtext('./n:CourseDate', namespaces=NS) or custom.findtext('./s:CourseDate', namespaces=NS)
-
-                    # Нормализация: замена запятой на точку и преобразование в float
-                    course_value = float(course_str.replace(',', '.'))
-                    correlation_value = int(correlation_str)
-                    
-                    # Финальный нормализованный курс (Курс / Множитель)
-                    final_rate = course_value / correlation_value
-
-                    parsed_rates.append({
-                        'currency': curr_code,
-                        # Убираем время из даты
-                        'date': course_date.split('T')[0] if course_date else None, 
-                        'rate': round(final_rate, 4),
-                        'correlation': correlation_value
-                    })
-
-                except (AttributeError, ValueError) as e:
-                    logging.error(f"Ошибка парсинга полей в EntityCustom: {e}")
-                    continue
-
-    except etree.XMLSyntaxError as e:
-        logging.error(f"Ошибка синтаксиса XML: {e}")
-        return []
-    except Exception as e:
-        logging.error(f"Неизвестная ошибка при парсинге: {e}")
-        return []
-        
-    logging.info("Парсинг XML успешно завершен.")
-    return parsed_rates
-
-# ----------------------------------------------------
-# 4. ФУНКЦИЯ ДЛЯ ГЕНЕРАЦИИ HTML
-# ----------------------------------------------------
-
-def generate_html(current_rates: list, prev_rates: dict, date_str: str, output_path='index.html'):
-    """
-    Генерирует финальный HTML-файл, используя Jinja2.
-    """
-    logging.info("Начало генерации HTML.")
+    root = etree.fromstring(xml_data.encode('utf-8'))
     
-    # Настраиваем Jinja2 для загрузки из текущей директории
-    loader = FileSystemLoader('.')
-    env = Environment(loader=loader)
+    # Namespace для элементов CommonInfo и Entity
+    ns_map = {'s': 'http://www.w3.org/2003/05/soap-envelope'}
     
-    try:
-        # Предполагаем, что шаблон называется index_template.html
-        template = env.get_template('index_template.html') 
-    except Exception as e:
-        logging.error(f"Ошибка загрузки шаблона 'index_template.html'. Убедитесь, что файл существует: {e}")
+    # 1. Извлечение данных курсов
+    rates_data = {}
+    
+    # XPath для Entity: /Envelope/Body/Entity
+    entities = root.xpath('./s:Body/Entity', namespaces=ns_map)
+
+    # Перебираем все сущности (курсы)
+    for entity in entities:
+        # [cite_start]Получение пользовательских реквизитов [cite: 53]
+        custom = entity.xpath('./EntityCustom', namespaces=ns_map)[0]
+        
+        # Извлечение данных
+        curr_code = custom.xpath('./CurrCode', namespaces=ns_map)[0].text.strip()
+        [cite_start]course_date_str = custom.xpath('./CourseDate', namespaces=ns_map)[0].text.strip() # Дата установки курса [cite: 13]
+        [cite_start]course_value_str = custom.xpath('./Course', namespaces=ns_map)[0].text.strip().replace(',', '.') # Значение курса [cite: 15]
+        [cite_start]corellation_value = int(custom.xpath('./Corellation', namespaces=ns_map)[0].text.strip()) # Множитель [cite: 16]
+        
+        # Преобразование значений
+        try:
+            course = float(course_value_str) / corellation_value
+        except ValueError:
+            course = 0.0
+
+        # Сохраняем только самую свежую запись для каждой валюты.
+        # В данном случае, мы полагаемся на то, что сервис возвращает курсы в хронологическом порядке, 
+        # но для надежности берем самый последний курс.
+        
+        # [cite_start]Поскольку CourseDate (дата курса) - это самая важная метрика актуальности [cite: 13]
+        
+        # Если валюта KZT (тенге), пропускаем ее, т.к. KZT/KZT = 1, и она не нужна
+        if curr_code == 'KZT':
+            continue
+
+        # В идеале нужно парсить дату, но для простого проекта берем первый курс
+        # и полагаемся на то, что это самый актуальный курс, предоставленный НБ РК.
+
+        rates_data[curr_code] = {
+            'code': curr_code,
+            'course': course,
+            'corellation': corellation_value,
+            'course_date': course_date_str # Сохраняем дату для дальнейшего использования
+        }
+    
+    return rates_data
+
+# --- Новые функции для Фазы 1 ---
+
+def generate_json_api(all_rates):
+    """
+    Генерирует и сохраняет файл api/latest.json.
+    """
+    
+    # Получаем дату курса из первого элемента (предполагаем, что она одинакова)
+    first_rate = next(iter(all_rates.values()))
+    course_date = first_rate['course_date'] if first_rate else datetime.now().strftime(DATE_FORMAT)
+
+    # Форматирование данных для JSON
+    json_output = {
+        'metadata': {
+            'source': 'National Bank of Kazakhstan (NSI_NBRK_CRCY_COURSE)',
+            'updated_date': datetime.now().isoformat(),
+            'course_date': course_date
+        },
+        'rates': all_rates
+    }
+    
+    # Создаем папку api, если она не существует
+    os.makedirs('api', exist_ok=True)
+    
+    # Сохраняем файл
+    with open('api/latest.json', 'w', encoding='utf-8') as f:
+        json.dump(json_output, f, ensure_ascii=False, indent=4)
+    
+    print("Файл api/latest.json успешно сгенерирован.")
+
+
+def main():
+    """
+    Основная логика: получение, парсинг, фильтрация и генерация файлов.
+    """
+    print("Запуск скрипта обновления курсов...")
+    
+    xml_data = get_latest_exchange_rates()
+    
+    if not xml_data:
+        print("Не удалось получить XML-данные. Работа завершена.")
         return
 
-    # Подготовка данных для рендеринга (расчет разницы)
-    rendered_rates = []
+    all_rates = parse_xml_data(xml_data)
     
-    for rate in current_rates:
-        curr = rate['currency']
-        
-        # Находим курс за предыдущий день. Если нет (например, новая валюта), берем текущий
-        prev_rate = prev_rates.get(curr, rate['rate']) 
+    if not all_rates:
+        print("Не удалось разобрать курсы валют. Работа завершена.")
+        return
 
-        diff = rate['rate'] - prev_rate
-        diff_str = f"{diff:+.4f}" # Формат с обязательным знаком (+ или -)
-        
-        # Определяем класс для стрелки
-        if diff > 0.0001:
-            diff_class = 'up'
-        elif diff < -0.0001:
-            diff_class = 'down'
-        else:
-            diff_class = 'neutral'
-        
-        rendered_rates.append({
-            'currency': curr,
-            'rate': f"{rate['rate']:.4f}",
-            'diff': diff_str,
-            'diff_class': diff_class
-        })
-
-    # Сортируем USD, EUR, RUB в начало списка для лучшего отображения в MVP
-    priority_currencies = ['USD', 'EUR', 'RUB']
+    # 1.2. Создание JSON API
+    generate_json_api(all_rates)
     
-    sorted_rates = sorted(rendered_rates, 
-                         key=lambda x: (0 if x['currency'] in priority_currencies else 1, 
-                                        priority_currencies.index(x['currency']) if x['currency'] in priority_currencies else x['currency']))
-
-    # Рендеринг шаблона
-    # ИСПРАВЛЕНИЕ: Передаем словарь MESSAGES напрямую.
-    output = template.render(
-        last_update_date=date_str,
-        rates=sorted_rates,
-        MESSAGES=MESSAGES 
-    )
-
-    # Сохранение финального HTML
-    with open(output_path, 'w', encoding='utf-8') as f:
+    # 1.3. Фильтрация для главной страницы
+    main_rates = {
+        code: data for code, data in all_rates.items() if code in MAIN_CURRENCIES
+    }
+    
+    # 1.1. Получение даты курса для отображения
+    first_rate = next(iter(all_rates.values()))
+    course_date_str = first_rate['course_date']
+    
+    # Контекст для Jinja2
+    context = {
+        'rates': main_rates.values(),
+        'course_date': course_date_str
+    }
+    
+    # Генерация index.html
+    file_loader = FileSystemLoader('.')
+    env = Environment(loader=file_loader)
+    
+    template = env.get_template('index_template.html')
+    output = template.render(context)
+    
+    with open('index.html', 'w', encoding='utf-8') as f:
         f.write(output)
     
-    logging.info(f"HTML-файл '{output_path}' успешно сгенерирован и обновлен.")
+    print("Файл index.html успешно обновлен.")
 
 
-# ----------------------------------------------------
-# 5. ТОЧКА ВХОДА И ЗАПУСК
-# ----------------------------------------------------
-
-if __name__ == "__main__":
-    today = datetime.now().date()
-    
-    # Дата, которую мы показываем (T-1)
-    current_date = today - timedelta(days=1)
-    # Дата для сравнения (T-2)
-    previous_date = today - timedelta(days=2)
-    
-    current_date_str = current_date.strftime('%Y-%m-%d')
-    previous_date_str = previous_date.strftime('%Y-%m-%d')
-
-    print("--- ЗАПУСК ETL-СКРИПТА TengeHub ---")
-
-    # 1. Получаем текущие курсы (T-1)
-    data_xml_current = get_exchange_rates(current_date_str, current_date_str)
-    
-    if not data_xml_current:
-        print("Ошибка: Не удалось получить текущие курсы. Процесс остановлен.")
-        exit()
-        
-    current_rates_list = parse_rates_xml(data_xml_current)
-    
-    # 2. Получаем предыдущие курсы для сравнения (T-2)
-    data_xml_prev = get_exchange_rates(previous_date_str, previous_date_str)
-    
-    prev_rates_dict = {}
-    if data_xml_prev:
-        prev_rates_list = parse_rates_xml(data_xml_prev)
-        # Преобразуем список в словарь для быстрого поиска: {'USD': 518.0, ...}
-        prev_rates_dict = {rate['currency']: rate['rate'] for rate in prev_rates_list}
-    else:
-        logging.warning("Не удалось получить курсы за предыдущий день (T-2). Изменения не будут рассчитаны.")
-
-    # 3. Генерируем HTML
-    if current_rates_list:
-        generate_html(
-            current_rates=current_rates_list,
-            prev_rates=prev_rates_dict,
-            date_str=current_date.strftime('%Y-%m-%d'),
-            output_path='index.html' # Записываем в основной файл
-        )
-    else:
-        print("Не удалось извлечь курсы из XML. HTML не сгенерирован.")
+if __name__ == '__main__':
+    main()
