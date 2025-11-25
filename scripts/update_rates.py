@@ -75,9 +75,9 @@ def parse_xml_data(xml_data):
         
         # Извлечение данных
         curr_code = custom.xpath('./CurrCode', namespaces=ns_map)[0].text.strip()
-        [cite_start]course_date_str = custom.xpath('./CourseDate', namespaces=ns_map)[0].text.strip() # Дата установки курса [cite: 13]
-        [cite_start]course_value_str = custom.xpath('./Course', namespaces=ns_map)[0].text.strip().replace(',', '.') # Значение курса [cite: 15]
-        [cite_start]corellation_value = int(custom.xpath('./Corellation', namespaces=ns_map)[0].text.strip()) # Множитель [cite: 16]
+        [cite_start]course_date_str = custom.xpath('./CourseDate', namespaces=ns_map)[0].text.strip()
+        [cite_start]course_value_str = custom.xpath('./Course', namespaces=ns_map)[0].text.strip().replace(',', '.')
+        [cite_start]corellation_value = int(custom.xpath('./Corellation', namespaces=ns_map)[0].text.strip())
         
         # Преобразование значений
         try:
