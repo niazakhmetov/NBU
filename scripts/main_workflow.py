@@ -1,40 +1,39 @@
 # scripts/main_workflow.py
-import os
+
 import sys
+import os
 
-# Добавляем корневую директорию к PATH для импорта других модулей scripts/
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Добавляем корневую директорию проекта в PYTHONPATH
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-import data_fetcher
-import data_parser
-import content_generator
+# Импортируем все необходимые модули
+from scripts.data_fetcher import fetch_xml_data
+from scripts.data_parser import parse_xml_data
+from scripts.content_generator import generate_json_api, generate_html_page, generate_about_page # НОВЫЙ ИМПОРТ
 
-def main():
-    """
-    Основная логика: получение, парсинг и генерация файлов.
-    """
-    print("--- Запуск автоматического обновления курсов (Фаза 2) ---")
-    
-    # 1. Получение XML-данных
-    xml_data = data_fetcher.get_latest_exchange_rates()
-    
-    if not xml_data:
-        print("Не удалось получить XML-данные. Работа завершена.")
-        return
+print("--- Запуск автоматического обновления курсов (Фаза 2) ---")
+
+try:
+    # 1. Загрузка данных
+    print("Подключение к SOAP-сервису НБ РК...")
+    xml_data = fetch_xml_data()
+    print("Данные успешно получены.")
 
     # 2. Парсинг данных
-    all_rates = data_parser.parse_xml_data(xml_data)
-    
-    if not all_rates:
-        print("Не удалось разобрать курсы валют. Работа завершена.")
-        return
+    all_rates = parse_xml_data(xml_data)
 
-    # 3. Генерация контента
-    content_generator.generate_json_api(all_rates)
-    content_generator.generate_html_page(all_rates)
+    # 3. Генерация выходных файлов
     
+    # 3.1 Генерация API (latest.json)
+    generate_json_api(all_rates)
+    
+    # 3.2 Генерация главной страницы (index.html)
+    generate_html_page(all_rates)
+    
+    # 3.3 Генерация страницы "О платформе" (about.html) (НОВЫЙ ВЫЗОВ)
+    generate_about_page()
+
     print("--- Обновление завершено успешно! ---")
 
-
-if __name__ == '__main__':
-    main()
+except Exception as e:
+    print(f"Критическая ошибка Workflow: {e}")
