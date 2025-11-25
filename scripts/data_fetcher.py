@@ -20,7 +20,7 @@ def get_latest_exchange_rates():
     try:
         response = client.service.GET_GUIDE(
             guideCode=TARGET_GUIDE_CODE,
-            type='FULL',
+            type='DELTA',
             beginDate=begin_date.strftime(DATE_FORMAT),
             endDate=end_date.strftime(DATE_FORMAT)
         )
