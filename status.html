@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ L.status_h2 | default('Статус системы') }} | TengeHub</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 20px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+        h1 {
+            color: #007bff;
+            font-size: 28px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .data-table {
+            width: 100%;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .data-table th, .data-table td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .data-table th {
+            width: 50%;
+            background-color: #f8f8f8;
+            font-weight: bold;
+            text-align: left;
+        }
+        .status-ok { color: #28a745; font-weight: bold; }
+        .status-error { color: #dc3545; font-weight: bold; }
+        .note-box {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #fff3cd; /* Желтый фон для предупреждения/информации */
+            border: 1px solid #ffeeba;
+            border-radius: 4px;
+            color: #856404;
+        }
+        footer {
+            margin-top: 40px;
+            padding: 20px 0;
+            border-top: 1px solid #eee;
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="index.html">{{ L.nav_main }}</a>
+            <a href="full_rates.html">{{ L.nav_all_rates }}</a>
+            <a href="about.html">{{ L.nav_about }}</a>
+            <a href="status.html" style="text-decoration: underline;">{{ L.nav_status }}</a> 
+        </nav>
+    </header>
+    
+    <div class="container">
+        <h1>{{ L.status_h2 }}</h1>
+        
+        <p>
+            {{ L.description | default('Информация о статусе синхронизации данных с Национальным Банком РК.') }}
+        </p>
+
+        <table class="data-table">
+            <tr>
+                <th>{{ L.status_system_status }}</th>
+                <td class="{% if system_status == 'OK' %}status-ok{% else %}status-error{% endif %}">
+                    {% if system_status == 'OK' %}
+                        {{ L.status_system_ok }} (Синхронизация прошла успешно)
+                    {% else %}
+                        {{ L.status_system_error }} (Проверьте логи в GitHub Actions)
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>{{ L.status_last_updated }}</th>
+                <td>{{ last_updated_time | default('Данные не обновлялись') }}</td>
+            </tr>
+            <tr>
+                <th>{{ L.status_current_date }}</th>
+                <td>{{ course_date | default('Дата курсов неизвестна') }}</td>
+            </tr>
+            <tr>
+                <th>{{ L.status_source_api }}</th>
+                <td>https://nationalbank.kz/rss/get_rates.cfm</td>
+            </tr>
+            <tr>
+                <th>{{ L.status_source_type }}</th>
+                <td>Публичный URL-сервис (RSS/XML)</td>
+            </tr>
+        </table>
+
+        <div class="note-box">
+            <h4>{{ L.status_note }}</h4>
+            <p>{{ L.status_note_text | default('Данные генерируются автоматически.') }}</p>
+        </div>
+
+        <footer>
+            <p>&copy; 2025 TengeHub. {{ L.source_p | default('Данные НБ РК.') }}</p>
+        </footer>
+    </div>
+</body>
+</html>
