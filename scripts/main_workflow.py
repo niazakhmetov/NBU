@@ -11,7 +11,6 @@ from data_fetcher import fetch_rates_xml
 from data_parser import parse_rates_xml
 from qrcode_generator import generate_verification_url, generate_qr_base64
 # Импорт реальной функции генерации из content_generator.py
-# Примечание: предполагается, что scripts/content_generator.py содержит функцию generate_page
 from content_generator import generate_page 
 
 
@@ -61,6 +60,7 @@ def run_workflow():
     
     try:
         # 1. Получение и парсинг данных
+        # Вызов без fdate возвращает курсы на последнюю доступную дату
         xml_data = fetch_rates_xml()
         course_data = parse_rates_xml(xml_data)
         
@@ -90,6 +90,7 @@ def run_workflow():
     # --- 4. Подготовка общего контекста для Jinja2 ---
     
     # Фильтруем курсы для главной страницы (Top-10)
+    # Если rates пуст (из-за ошибки), main_rates будет пустым
     main_rates = [rate for rate in rates if rate['code'] in MAIN_CURRENCIES]
     
     # Общий контекст для всех страниц
@@ -99,7 +100,7 @@ def run_workflow():
         'MESSAGES': MESSAGES,
         'course_date': course_date,
         'global_qr_code_base64': global_qr_code_base64,
-        'now': datetime.now, 
+        'now': datetime.now, # ⭐ ВАЖНО: Передаем функцию datetime.now для использования в шаблонах (например, {{ now().year }})
         
         # Данные для status.html
         'last_updated_time': last_updated_time,
@@ -113,23 +114,30 @@ def run_workflow():
     # --- 5. Генерация всех страниц (Координация) ---
     print("--- Начинаем генерацию HTML-страниц ---")
     
-    # 5.1. Главная страница (index.html) - использует main_rates
-    index_context = {**base_context, 'rates': main_rates}
-    generate_page('index_template.html', 'index.html', index_context)
+    try:
+        # 5.1. Главная страница (index.html) - использует main_rates
+        index_context = {**base_context, 'rates': main_rates}
+        generate_page('index_template.html', 'index.html', index_context)
 
-    # 5.2. Полный список курсов (full_rates.html) - использует полный список rates
-    full_rates_context = {**base_context, 'rates': rates}
-    generate_page('full_rates_template.html', 'full_rates.html', full_rates_context)
+        # 5.2. Полный список курсов (full_rates.html) - использует полный список rates
+        full_rates_context = {**base_context, 'rates': rates}
+        generate_page('full_rates_template.html', 'full_rates.html', full_rates_context)
 
-    # 5.3. О платформе (about.html)
-    generate_page('about_template.html', 'about.html', base_context)
+        # 5.3. О платформе (about.html)
+        generate_page('about_template.html', 'about.html', base_context)
 
-    # 5.4. Статус системы (status.html) - использует last_updated_time и system_status
-    generate_page('status_template.html', 'status.html', base_context)
-    
-    # 5.5. Страница верификации (verify.html) - нужна только для базовых переводов и навигации
-    generate_page('verify_template.html', 'verify.html', base_context)
-    
+        # 5.4. Статус системы (status.html) - использует last_updated_time и system_status
+        generate_page('status_template.html', 'status.html', base_context)
+        
+        # 5.5. Страница верификации (verify.html)
+        generate_page('verify_template.html', 'verify.html', base_context)
+        
+    except Exception as e:
+        # Если произошла ошибка генерации (например, отсутствует шаблон), это не меняет system_status,
+        # но должно быть зафиксировано.
+        print(f"Критическая ошибка при генерации HTML: {e}")
+        # Если status.html не был сгенерирован, это может быть проблемой.
+        
     print("--- Генерация всех статических страниц завершена. ---")
     
     if system_status == "OK":
