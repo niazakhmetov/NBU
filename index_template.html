@@ -159,7 +159,8 @@
             <p>
                 <a href="about.html">{{ L.partner_cta }}</a>
             </p>
-            <p style="margin-top: 15px;">&copy; {{ now() | strftime('%Y') | default('2025') }} TengeHub. {{ L.source_p }}</p>
+            {# ⭐ ИСПРАВЛЕНИЕ: Заменен фильтр на вызов метода .strftime() #}
+            <p style="margin-top: 15px;">&copy; {{ now().strftime('%Y') | default('2025') }} TengeHub. {{ L.source_p }}</p>
         </footer>
     </div>
 </body>
