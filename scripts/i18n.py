@@ -1,107 +1,112 @@
 # scripts/i18n.py
 
-# Полный словарь для интернационализации (i18n)
 MESSAGES = {
     'ru': {
+        # Заголовок
         'title': 'Официальные курсы валют НБ РК | TengeHub',
-        'description': 'Интеграция с официальным SOAP-сервисом Национального Банка РК. Курсы обновляются ежедневно.',
-        'data_actual_on': 'Курсы валют актуальны на',
-        
-        # Заголовки таблицы
-        'currency_name': 'Валюта (Название)',
-        'rate_name': 'Курс (KZT)',
-        'change': 'Изменение',
+        'title_about': 'О TengeHub | Официальные курсы НБ РК',
 
-        # Навигация 
+        # Навигация
         'nav_main': 'Главная',
         'nav_all_rates': 'Все курсы',
         'nav_about': 'О платформе',
 
-        # Секция партнерства
-        'partner_title': 'Сотрудничество',
-        'partner_text': 'Заинтересованы в партнерстве или хотите разместить рекламу? Свяжитесь с нами для обсуждения условий.',
-        'partner_cta': 'Связаться',
+        # Главная страница (index_template.html)
+        'data_actual_on': 'Курсы валют актуальны на',
+        'description': 'Интеграция с официальным SOAP-сервисом Национального Банка РК. Курсы обновляются ежедневно.',
+        'CURRENCY_NAME': 'ВАЛЮТА (НАЗВАНИЕ)',
+        'RATE_NAME': 'КУРС (KZT)',
+        'CHANGE': 'ИЗМЕНЕНИЕ',
         
-        # --- НОВЫЕ КЛЮЧИ ДЛЯ ABOUT.HTML ---
-        'title_about': 'О платформе | TengeHub',
+        # Раздел "Партнеры" (для примера)
+        'partner_title': 'Сотрудничество',
+        'partner_text': 'Если вы заинтересованы в интеграции данных или партнерстве, свяжитесь с нами.',
+        'partner_cta': 'Связаться',
+
+        # Страница "О нас" (about_template.html)
         'about_h2': 'О проекте TengeHub',
-        'about_p1': 'TengeHub — это независимый проект, созданный для предоставления актуальных и надежных курсов валют Национального Банка Республики Казахстан в удобном, современном формате API и веб-сайта.',
-        'tech_h3': 'Механизм обновления данных',
+        'about_p1': 'TengeHub — это некоммерческий проект, созданный для предоставления актуальных официальных курсов валют Национального Банка Республики Казахстан в удобном и быстром формате.',
+        'tech_h3': 'Как это работает',
         'tech_step1_h': '1. Источник данных:',
-        'tech_step1_p': 'Курсы валют в режиме реального времени запрашиваются напрямую через SOAP-сервис Национального Банка РК.',
+        'tech_step1_p': 'Мы используем официальный SOAP-сервис Национального Банка РК для получения исходных данных.',
         'tech_step2_h': '2. Автоматизация:',
-        'tech_step2_p': 'Обновление данных и генерация сайта происходят полностью автоматически благодаря GitHub Actions, которые запускают скрипт ежедневно.',
+        'tech_step2_p': 'Ежедневно GitHub Actions запускает Python-скрипт, который извлекает, обрабатывает и преобразует данные.',
         'tech_step3_h': '3. Генерация:',
-        'tech_step3_p': 'После получения данных Python-скрипты генерируют статический API-файл (latest.json) и HTML-страницы (index.html, about.html и т.д.) с помощью шаблонизатора Jinja2.',
-        'source_h3': 'Открытый исходный код',
-        'source_p': 'Весь код проекта TengeHub является открытым (Open Source). Вы можете изучить, как работает система, и предложить улучшения на нашем репозитории GitHub.'
+        'tech_step3_p': 'С помощью шаблонизатора Jinja2 создаются статические HTML-страницы, готовые к публикации.',
+        'source_h3': 'Надежность источника',
+        'source_p': 'Все данные поступают исключительно из официального источника (Национальный Банк РК), что гарантирует их достоверность.',
+        'contact_cta': 'Свяжитесь с нами для сотрудничества.',
     },
     'kz': {
-        'title': 'ҚР Ұлттық Банкінің ресми валюта бағамдары | TengeHub',
-        'description': 'ҚР Ұлттық Банкінің ресми SOAP-қызметімен интеграция. Бағамдар күнделікті жаңартылады.',
-        'data_actual_on': 'Валюта бағамдары мына күнге өзекті',
-        
-        # Заголовки таблицы
-        'currency_name': 'Валюта (Атауы)',
-        'rate_name': 'Бағам (KZT)',
-        'change': 'Өзгеріс',
+        # Заголовок
+        'title': 'ҚР ҰБ ресми валюта бағамдары | TengeHub',
+        'title_about': 'TengeHub туралы | ҚР ҰБ ресми бағамдары',
 
         # Навигация
-        'nav_main': 'Басты',
+        'nav_main': 'Басты бет',
         'nav_all_rates': 'Барлық бағамдар',
         'nav_about': 'Платформа туралы',
 
-        # Секция партнерства
+        # Главная страница (index_template.html)
+        'data_actual_on': 'Валюта бағамдары мына күнге өзекті',
+        'description': 'ҚР Ұлттық Банкінің ресми SOAP-сервисімен интеграция. Бағамдар күн сайын жаңартылады.',
+        'CURRENCY_NAME': 'ВАЛЮТА (АТАУЫ)',
+        'RATE_NAME': 'БАҒАМ (KZT)',
+        'CHANGE': 'ӨЗГЕРІС',
+
+        # Раздел "Партнеры"
         'partner_title': 'Ынтымақтастық',
-        'partner_text': 'Әріптестікке қызығушылық танытасыз ба немесе жарнама орналастырғыңыз келе ме? Шарттарды талқылау үшін бізге хабарласыңыз.',
+        'partner_text': 'Егер сіз деректерді біріктіруге немесе серіктестікке қызығушылық танытсаңыз, бізге хабарласыңыз.',
         'partner_cta': 'Хабарласу',
         
-        # --- НОВЫЕ КЛЮЧИ ДЛЯ ABOUT.HTML ---
-        'title_about': 'Платформа туралы | TengeHub',
+        # Страница "О нас" (about_template.html)
         'about_h2': 'TengeHub жобасы туралы',
-        'about_p1': 'TengeHub — бұл Қазақстан Республикасы Ұлттық Банкінің нақты және сенімді валюта бағамдарын ыңғайлы, заманауи API және веб-сайт форматында ұсыну үшін құрылған тәуелсіз жоба.',
-        'tech_h3': 'Деректерді жаңарту механизмі',
-        'tech_step1_h': '1. Дерек көзі:',
-        'tech_step1_p': 'Валюта бағамдары ҚР Ұлттық Банкінің SOAP-қызметі арқылы нақты уақыт режимінде сұратылады.',
+        'about_p1': 'TengeHub — Қазақстан Республикасы Ұлттық Банкінің нақты ресми валюта бағамдарын ыңғайлы және жылдам форматта ұсыну үшін құрылған коммерциялық емес жоба.',
+        'tech_h3': 'Қалай жұмыс істейді',
+        'tech_step1_h': '1. Дереккөз:',
+        'tech_step1_p': 'Біз бастапқы деректерді алу үшін ҚР Ұлттық Банкінің ресми SOAP-сервисін қолданамыз.',
         'tech_step2_h': '2. Автоматтандыру:',
-        'tech_step2_p': 'Деректерді жаңарту және сайтты генерациялау GitHub Actions арқылы толығымен автоматты түрде жүзеге асады, ол скриптті күн сайын іске қосады.',
+        'tech_step2_p': 'Күн сайын GitHub Actions скриптті іске қосады, ол деректерді өңдейді және түрлендіреді.',
         'tech_step3_h': '3. Генерациялау:',
-        'tech_step3_p': 'Деректер алынғаннан кейін Python скрипттері Jinja2 шаблондау құралын пайдаланып статикалық API файлын (latest.json) және HTML беттерін (index.html, about.html және т.б.) жасайды.',
-        'source_h3': 'Ашық бастапқы код',
-        'source_p': 'TengeHub жобасының барлық коды ашық (Open Source) болып табылады. Сіз жүйенің қалай жұмыс істейтінін зерттеп, GitHub репозиторийімізде жақсартулар ұсына аласыз.'
+        'tech_step3_p': 'Jinja2 шаблонизаторы арқылы жариялауға дайын статикалық HTML-беттер жасалады.',
+        'source_h3': 'Дереккөз сенімділігі',
+        'source_p': 'Барлық деректер тек ресми көзден (ҚР Ұлттық Банкі) алынады, бұл олардың дұрыстығына кепілдік береді.',
+        'contact_cta': 'Ынтымақтастық үшін бізге хабарласыңыз.',
     },
     'en': {
-        'title': 'Official Exchange Rates of NB RK | TengeHub',
-        'description': 'Integration with the official SOAP service of the National Bank of Kazakhstan. Rates are updated daily.',
-        'data_actual_on': 'Exchange rates are actual as of',
-
-        # Заголовки таблицы
-        'currency_name': 'Currency (Name)',
-        'rate_name': 'Rate (KZT)',
-        'change': 'Change',
-
+        # Заголовок
+        'title': 'Official Exchange Rates of NBK | TengeHub',
+        'title_about': 'About TengeHub | Official NBK Rates',
+        
         # Навигация
-        'nav_main': 'Home',
+        'nav_main': 'Main',
         'nav_all_rates': 'All Rates',
         'nav_about': 'About Platform',
+
+        # Главная страница (index_template.html)
+        'data_actual_on': 'Exchange rates are actual as of',
+        'description': 'Integration with the official SOAP service of the National Bank of Kazakhstan. Rates are updated daily.',
+        'CURRENCY_NAME': 'CURRENCY (NAME)',
+        'RATE_NAME': 'RATE (KZT)',
+        'CHANGE': 'CHANGE',
         
-        # Секция партнерства
+        # Раздел "Партнеры"
         'partner_title': 'Partnership',
-        'partner_text': 'Interested in partnership or want to place advertising? Contact us to discuss terms.',
+        'partner_text': 'If you are interested in data integration or partnership, feel free to contact us.',
         'partner_cta': 'Contact Us',
-        
-        # --- НОВЫЕ КЛЮЧИ ДЛЯ ABOUT.HTML ---
-        'title_about': 'About Platform | TengeHub',
+
+        # Страница "О нас" (about_template.html)
         'about_h2': 'About the TengeHub Project',
-        'about_p1': 'TengeHub is an independent project created to provide up-to-date and reliable exchange rates from the National Bank of the Republic of Kazakhstan in a convenient, modern API and website format.',
-        'tech_h3': 'Data Update Mechanism',
+        'about_p1': 'TengeHub is a non-commercial project created to provide the current official exchange rates of the National Bank of the Republic of Kazakhstan in a convenient and fast format.',
+        'tech_h3': 'How It Works',
         'tech_step1_h': '1. Data Source:',
-        'tech_step1_p': 'Real-time exchange rates are requested directly through the National Bank of Kazakhstan’s official SOAP service.',
+        'tech_step1_p': 'We use the official SOAP service of the National Bank of Kazakhstan to retrieve the raw data.',
         'tech_step2_h': '2. Automation:',
-        'tech_step2_p': 'Data refresh and site generation are fully automatic, powered by GitHub Actions which execute the script daily.',
+        'tech_step2_p': 'GitHub Actions runs a Python script daily which extracts, processes, and transforms the data.',
         'tech_step3_h': '3. Generation:',
-        'tech_step3_p': 'After receiving the data, Python scripts generate a static API file (latest.json) and HTML pages (index.html, about.html, etc.) using the Jinja2 templating engine.',
-        'source_h3': 'Open Source Code',
-        'source_p': 'The entire code for the TengeHub project is Open Source. You can review how the system works and suggest improvements on our GitHub repository.'
-    }
+        'tech_step3_p': 'Static HTML pages, ready for publication, are created using the Jinja2 templating engine.',
+        'source_h3': 'Source Reliability',
+        'source_p': 'All data comes exclusively from the official source (National Bank of Kazakhstan), guaranteeing its accuracy.',
+        'contact_cta': 'Contact us for partnership.',
+    },
 }
