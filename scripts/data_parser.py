@@ -1,97 +1,78 @@
 # scripts/data_parser.py
-from lxml import etree
-import math
 
-# --- Справочник русских названий валют (39 курсов НБ РК) ---
-CURRENCY_NAMES_RU = {
-    'USD': 'Доллар США',
-    'EUR': 'Евро',
-    'RUB': 'Российский рубль',
-    'AED': 'Дирхам ОАЭ',
-    'AMD': 'Армянский драм',
-    'AUD': 'Австралийский доллар',
-    'AZN': 'Азербайджанский манат',
-    'BRL': 'Бразильский реал',
-    'BYN': 'Белорусский рубль',
-    'CAD': 'Канадский доллар',
-    'CHF': 'Швейцарский франк',
-    'CNY': 'Китайский юань',
-    'CZK': 'Чешская крона',
-    'DKK': 'Датская крона',
-    'GBP': 'Фунт стерлингов',
-    'GEL': 'Грузинский лари',
-    'HKD': 'Гонконгский доллар',
-    'HUF': 'Венгерский форинт',
-    'INR': 'Индийская рупия',
-    'JPY': 'Японская иена',
-    'KGS': 'Киргизский сом',
-    'KRW': 'Вон Республики Корея',
-    'KWD': 'Кувейтский динар',
-    'MDL': 'Молдавский лей',
-    'MYR': 'Малайзийский ринггит',
-    'NOK': 'Норвежская крона',
-    'PLN': 'Польский злотый',
-    'QAR': 'Катарский риал',
-    'SAR': 'Саудовский риал',
-    'SEK': 'Шведская крона',
-    'SGD': 'Сингапурский доллар',
-    'THB': 'Тайский бат',
-    'TJS': 'Таджикский сомони',
-    'TMT': 'Туркменский манат',
-    'TRY': 'Турецкая лира',
-    'UAH': 'Украинская гривна',
-    'UZS': 'Узбекский сум',
-    'ZAR': 'Рэнд ЮАР',
-    'XDR': 'СДР (Специальные права заимствования)',
-}
+import xml.etree.ElementTree as ET
+from typing import List, Dict, Optional
 
-
-def parse_xml_data(xml_data):
+def parse_rates_xml(xml_data: str) -> Optional[Dict]:
     """
-    Разбирает XML-ответ и извлекает курсы валют.
-    Добавляет русское название (`ru`) к каждому курсу.
-    """
-    if not xml_data:
-        return {}
+    Парсит XML-данные курсов валют НБ РК.
 
-    root = etree.fromstring(xml_data.encode('utf-8'))
-    ns_map = {'s': 'http://www.w3.org/2003/05/soap-envelope'}
-    rates_data = {}
+    Извлекает дату курсов и список валют с их полным именем, курсом и изменением.
+
+    Args:
+        xml_data (str): Сырой XML-ответ от сервиса НБ РК.
+
+    Returns:
+        Optional[Dict]: Словарь с ключами 'date' (str) и 'rates' (List[Dict]),
+                        или None в случае ошибки парсинга.
+    """
     
-    entities = root.xpath('./s:Body/s:Entity', namespaces=ns_map)
-
-    for entity in entities:
-        try:
-            custom = entity.xpath('./s:EntityCustom', namespaces=ns_map)[0]
-        except IndexError:
-            continue
+    rates_list: List[Dict] = []
+    
+    try:
+        # ET.fromstring автоматически обрабатывает кодировку, 
+        # но лучше, если requests предоставил корректную строку.
+        root = ET.fromstring(xml_data)
         
-        try:
-            curr_code = custom.xpath('./s:CurrCode', namespaces=ns_map)[0].text.strip()
-            course_date_str = custom.xpath('./s:CourseDate', namespaces=ns_map)[0].text.strip()
-            course_value_str = custom.xpath('./s:Course', namespaces=ns_map)[0].text.strip().replace(',', '.')
-            corellation_value = int(custom.xpath('./s:Corellation', namespaces=ns_map)[0].text.strip())
-        except (IndexError, AttributeError):
-            print(f"Предупреждение: Пропущен неполный элемент курса.")
-            continue
+        # 1. Извлечение даты из корневого элемента <rates date="DD.MM.YYYY">
+        course_date = root.get('date')
+        if not course_date:
+            print("Ошибка парсинга: Не найдена дата курсов в корневом элементе.")
+            return None
+
+        # 2. Парсинг каждого элемента <item>
+        for item in root.findall('item'):
+            try:
+                # Извлечение текста элементов
+                code = item.find('title').text
+                rate_str = item.find('rate').text
+                quant_str = item.find('quant').text
+                change_str = item.find('change').text
+                
+                # Дополнительные поля
+                full_name = item.find('fullname').text if item.find('fullname') is not None else code
+                index = item.find('index').text if item.find('index') is not None else 'NO'
+
+                # Преобразование в числа. Используем replace(',', '.') 
+                # для надежного парсинга чисел
+                course = float(rate_str.replace(',', '.'))
+                quant = int(quant_str)
+                change = float(change_str.replace(',', '.')) if change_str else 0.0
+
+                rates_list.append({
+                    'code': code,
+                    'full_name': full_name,
+                    'course': course,
+                    'quant': quant, # Количество единиц, за которое дается курс (обычно 1, но 100 для JPY, HUF)
+                    'change': change,
+                    'rate_diff': change, # Изменение (разница) относительно предыдущего дня
+                    'index': index
+                })
+            except (AttributeError, ValueError) as item_e:
+                # Пропускаем некорректно сформированный элемент или ошибку преобразования
+                print(f"Ошибка парсинга элемента '{item.find('title').text if item.find('title') is not None else 'Unknown'}': {item_e}")
+                continue
+
+        print(f"Парсинг завершен. Найдено {len(rates_list)} курсов на дату {course_date}.")
         
-        try:
-            course = float(course_value_str) / corellation_value
-            course = round(course, 4)
-        except ValueError:
-            course = 0.0
-
-        if curr_code == 'KZT':
-            continue
-
-        rates_data[curr_code] = {
-            'code': curr_code,
-            'course': course,
-            'corellation': corellation_value,
-            'course_date': course_date_str,
-            # КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Добавление русского названия
-            'ru': CURRENCY_NAMES_RU.get(curr_code, curr_code) 
+        return {
+            'date': course_date,
+            'rates': rates_list
         }
-    
-    print(f"Успешно разобрано {len(rates_data)} курсов валют.")
-    return rates_data
+
+    except ET.ParseError as parse_e:
+        print(f"Критическая ошибка парсинга XML: {parse_e}")
+        return None
+    except Exception as e:
+        print(f"Непредвиденная ошибка при парсинге: {e}")
+        return None
