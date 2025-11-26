@@ -4,17 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ MESSAGES['ru']['title_about'] }}</title>
+    
+    <link rel="stylesheet" href="assets/style.css"> 
+    
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
-        header { margin-bottom: 20px; }
-        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        nav { margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
-        nav a { margin-right: 15px; text-decoration: none; color: #3498db; font-weight: bold; }
-        nav a:hover { color: #2980b9; }
-        #language-switcher button { padding: 8px 12px; margin-right: 5px; cursor: pointer; border: 1px solid #bdc3c7; background-color: #ffffff; border-radius: 4px; }
-        #language-switcher button:hover { background-color: #3498db; color: white; }
-        .content-box { background-color: #ffffff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
-        .tech-detail { border-left: 3px solid #f39c12; padding-left: 15px; margin-top: 15px; }
+        .content-box { 
+            background-color: #ffffff; 
+            padding: 25px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); 
+            margin-top: 20px; /* Немного отступа от навигации */
+        }
+        .tech-detail { 
+            border-left: 3px solid #f39c12; /* Оранжевая линия */
+            padding-left: 15px; 
+            margin-top: 15px; 
+        }
+        .tech-detail p {
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -47,9 +55,12 @@
         
         <h3 data-key="source_h3">{{ MESSAGES['ru']['source_h3'] }}</h3>
         <p data-key="source_p">{{ MESSAGES['ru']['source_p'] }}</p>
+        
+        <p data-key="contact_cta">{{ MESSAGES['ru']['contact_cta'] | default('Свяжитесь с нами для сотрудничества.') }}</p>
     </main>
 
     <script>
+        // Код JS для мультиязычности
         const MESSAGES_DATA = JSON.parse('{{ MESSAGES | tojson }}'); 
         let currentLang = 'ru';
 
@@ -60,15 +71,17 @@
             document.querySelectorAll('[data-key]').forEach(element => {
                 const key = element.getAttribute('data-key');
                 if (MESSAGES_DATA[lang] && MESSAGES_DATA[lang][key]) {
+                    const text = MESSAGES_DATA[lang][key];
                     if (element.tagName === 'TITLE') {
-                        document.title = MESSAGES_DATA[lang][key];
+                        document.title = text;
                     } else {
-                        element.textContent = MESSAGES_DATA[lang][key];
+                        element.textContent = text;
                     }
                 }
             });
         }
 
+        // Установка начального языка
         window.onload = () => setLang(currentLang);
     </script>
 </body>
