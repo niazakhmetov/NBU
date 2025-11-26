@@ -10,13 +10,30 @@ def parse_rates_xml(xml_data: str) -> Optional[Dict]:
     Извлекает дату курсов и список валют с их полным именем, курсом и изменением.
     """
     
+    # --- КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ ДЛЯ ОШИБКИ 'not well-formed' ---
+    # 1. Убираем BOM (Byte Order Mark), если присутствует, и обрезаем лишние пробелы.
+    if xml_data.startswith('\ufeff'):
+        xml_data = xml_data.lstrip('\ufeff')
+    
+    # 2. Находим начало корневого элемента <rates> и обрезаем весь посторонний текст, который идет до него.
+    rates_start_index = xml_data.find('<rates>')
+    
+    if rates_start_index != -1:
+        # Обрезаем строку, чтобы она начиналась непосредственно с "<rates>"
+        xml_data = xml_data[rates_start_index:].strip()
+    else:
+        # Если тег <rates> не найден, это, вероятно, страница ошибки или пустой ответ.
+        print("Критическая ошибка: Не удалось найти корневой элемент <rates> в ответе API.")
+        return None
+    # --- КОНЕЦ ИСПРАВЛЕНИЯ ---
+
     rates_list: List[Dict] = []
     
     try:
-        # Парсинг XML-строки
+        # Парсинг очищенной XML-строки
         root = ET.fromstring(xml_data)
         
-        # 1. ИСПРАВЛЕНИЕ: Извлечение даты из дочернего элемента <date>, а не атрибута
+        # 1. Извлечение даты
         date_element = root.find('date')
         course_date = date_element.text if date_element is not None else None
 
@@ -28,9 +45,9 @@ def parse_rates_xml(xml_data: str) -> Optional[Dict]:
         for item in root.findall('item'):
             try:
                 # Извлечение текста элементов
-                code = item.find('title').text # Код валюты из <title> [cite: 158]
+                code = item.find('title').text # Код валюты
                 
-                # ⭐ ИСПРАВЛЕНИЕ: Курс находится в <description> 
+                # Курс находится в <description>
                 rate_str = item.find('description').text
                 
                 quant_str = item.find('quant').text
@@ -68,7 +85,8 @@ def parse_rates_xml(xml_data: str) -> Optional[Dict]:
         }
 
     except ET.ParseError as parse_e:
-        print(f"Критическая ошибка парсинга XML: {parse_e}")
+        # Это сработает, если XML невалиден даже после очистки (что маловероятно для НБ РК)
+        print(f"Критическая ошибка парсинга XML (внутренняя): {parse_e}")
         return None
     except Exception as e:
         print(f"Непредвиденная ошибка при парсинге: {e}")
