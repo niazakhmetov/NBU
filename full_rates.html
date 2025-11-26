@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ L.nav_full_rates_title }} | TengeHub</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 20px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+        h1 {
+            color: #007bff;
+            font-size: 24px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .change-up { color: green; font-weight: bold; }
+        .change-down { color: red; font-weight: bold; }
+        .feature-section {
+            background: #fcfcfc;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 6px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .form-group input[type="date"], .form-group select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .btn {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .btn-export { background-color: #007bff; }
+        .btn:hover { opacity: 0.9; }
+        .calculator-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 200px; /* Две даты и кнопка */
+            gap: 20px;
+            align-items: end;
+        }
+        footer {
+            margin-top: 40px;
+            padding: 20px 0;
+            border-top: 1px solid #eee;
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>TengeHub | {{ L.nav_full_rates_title }}</h1>
+        <nav>
+            <a href="index.html">{{ L.nav_main }}</a>
+            <a href="full_rates.html" style="text-decoration: underline;">{{ L.nav_all_rates }}</a>
+            <a href="about.html">{{ L.nav_about }}</a>
+            <a href="status.html">{{ L.MESSAGES['ru']['nav_status'] | default('Статус') }}</a> 
+        </nav>
+    </header>
+
+    <div class="container">
+
+        <h2>
+            {{ L.nav_full_rates_title }}
+            <span style="color: #d9534f;">({{ course_date }})</span>
+        </h2>
+        <p>{{ L.full_list_description | default('Полный перечень курсов НБ РК.') }}</p>
+
+        <section class="feature-section">
+            <h3>{{ L.calculator_h2 }}</h3>
+            <p><strong>{{ L.source_p | default('Данные: НБ РК') }}</strong></p>
+            <div class="calculator-row">
+                <div class="form-group">
+                    <label for="date1">{{ L.calculator_date1 }}</label>
+                    <input type="date" id="date1" value="{{ course_date }}"> 
+                </div>
+                
+                <div class="form-group">
+                    <label for="date2">{{ L.calculator_date2 }}</label>
+                    <input type="date" id="date2" value="{{ course_date }}">
+                </div>
+
+                <div class="form-group">
+                    <button class="btn" id="calculate-btn" disabled>{{ L.calculator_btn }}</button>
+                </div>
+            </div>
+            
+            <div id="calculation-result" style="margin-top: 15px; font-weight: bold; color: #d9534f;">
+                </div>
+        </section>
+
+        <section class="feature-section">
+            <h3>{{ L.export_h2 }}</h3>
+            <p>Выберите период или дату, чтобы выгрузить официальный курс для нужд аудита и учета.</p>
+            
+            <div class="export-options" style="display: flex; gap: 20px; align-items: center;">
+                <div class="form-group" style="flex-grow: 1;">
+                    <label for="export-start-date">Начальная дата</label>
+                    <input type="date" id="export-start-date" value="{{ course_date }}"> 
+                </div>
+                
+                <div class="form-group" style="flex-grow: 1;">
+                    <label for="export-end-date">Конечная дата</label>
+                    <input type="date" id="export-end-date" value="{{ course_date }}">
+                </div>
+                
+                <div style="flex-shrink: 0;">
+                    <button class="btn btn-export" id="export-csv-btn" disabled>{{ L.export_btn_csv }}</button>
+                    <button class="btn btn-export" id="print-btn" disabled>{{ L.export_btn_print }}</button>
+                </div>
+            </div>
+        </section>
+
+
+        <section class="full-rates-table" style="margin-top: 40px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">Код</th>
+                        <th style="width: 40%;">{{ L.CURRENCY_NAME }}</th>
+                        <th style="width: 10%;">{{ L.quant_header | default('Кол-во ед.') }}</th>
+                        <th style="width: 20%;">{{ L.RATE_NAME }}</th>
+                        <th style="width: 25%;">{{ L.CHANGE }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rate in rates %}
+                    <tr>
+                        <td>{{ rate.code }}</td>
+                        <td>{{ rate.full_name }}</td>
+                        <td>{{ rate.quant }}</td>
+                        <td>{{ "%.4f" | format(rate.course) }}</td> 
+                        <td class="{% if rate.change > 0 %}change-up{% elif rate.change < 0 %}change-down{% endif %}">
+                            {% if rate.change > 0 %}+{% endif %}
+                            {{ "%.4f" | format(rate.change) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <footer>
+            <p>&copy; 2025 TengeHub. {{ L.source_p | default('Данные НБ РК.') }}</p>
+        </footer>
+    </div>
+    
+    <script>
+        document.getElementById('calculate-btn').addEventListener('click', function() {
+            alert('Функционал расчета курсовых разниц будет реализован с использованием JavaScript для запроса исторических данных. Сейчас этот функционал отключен.');
+        });
+        document.getElementById('export-csv-btn').addEventListener('click', function() {
+            alert('Функционал экспорта требует JS-логики для сбора и форматирования данных. Сейчас этот функционал отключен.');
+        });
+    </script>
+</body>
+</html>
