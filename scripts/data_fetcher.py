@@ -1,44 +1,49 @@
 # scripts/data_fetcher.py
+
 import requests
-import datetime
+from requests.exceptions import RequestException
 
-# --- Константы SOAP-сервиса НБ РК ---
-SOAP_URL = "http://www.nationalbank.kz/rss/get_rates"
-SOAP_HEADERS = {'Content-Type': 'text/xml; charset=utf-8'}
-SOAP_TEMPLATE = """<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-  <soap:Body>
-    <get_rates xmlns="http://nationalbank.kz/">
-      <date>{date}</date>
-    </get_rates>
-  </soap:Body>
-</soap:Envelope>"""
-
-
-def fetch_xml_data():
+def fetch_rates_xml(fdate: str = None) -> str:
     """
-    Запрашивает актуальные курсы валют у SOAP-сервиса НБ РК.
-    Возвращает XML-ответ в виде строки или None при ошибке.
+    Получает сырой XML-ответ с курсами валют НБ РК.
+
+    Используется URL-сервис с параметром даты, который позволяет
+    получать курсы на любую историческую дату.
+
+    Args:
+        fdate (str, optional): Дата в формате 'DD.MM.YYYY'. 
+                               Если None, сервис вернет курсы на последнюю доступную дату.
+
+    Returns:
+        str: Сырой XML-ответ от сервиса.
+
+    Raises:
+        RequestException: Если произошла ошибка при запросе (таймаут, ошибка HTTP).
     """
-    # Форматируем текущую дату в требуемом формате YYYY-MM-DD
-    today = datetime.datetime.now().strftime('%Y-%m-%d')
-    soap_body = SOAP_TEMPLATE.format(date=today)
     
+    # 🟢 Используем HTTPS и URL-сервис, указанный в документации
+    BASE_URL = "https://nationalbank.kz/rss/get_rates.cfm"
+    
+    params = {}
+    if fdate:
+        # Дата должна быть в формате день.месяц.год
+        params['fdate'] = fdate
+    
+    TIMEOUT = 15 # Установим разумный таймаут
+    
+    print(f"Подключение к сервису НБ РК (Дата: {fdate or 'Последняя доступная'})...")
+
     try:
-        # ⚠️ ИСПРАВЛЕНИЕ: Добавлен явный таймаут (10 секунд)
-        response = requests.post(
-            SOAP_URL, 
-            headers=SOAP_HEADERS, 
-            data=soap_body.encode('utf-8'),
-            timeout=10 
-        )
-        response.raise_for_status() # Вызывает исключение для плохих ответов (4xx или 5xx)
+        # Успешно решает проблему с HTTPConnectionPool: Max retries, используя HTTPS
+        response = requests.get(BASE_URL, params=params, timeout=TIMEOUT)
+        response.raise_for_status() # Вызывает исключение для 4xx/5xx ошибок
+
+        # НБ РК часто использует кодировку 'windows-1251', установим ее, если не определена
+        if response.apparent_encoding.lower() not in ['utf-8', 'windows-1251', 'cp1251']:
+            response.encoding = 'windows-1251' 
         
-        # Так как это просто получение XML, мы возвращаем его для дальнейшего парсинга
         return response.text
         
-    except requests.exceptions.RequestException as e:
-        # Вывод ошибки в лог, чтобы видеть, что пошло не так
-        print(f"Ошибка при запросе к SOAP-сервису: {e}")
-        # При ошибке возвращаем None
-        return None
+    except RequestException as e:
+        print(f"Ошибка при запросе к сервису: {e}")
+        raise
