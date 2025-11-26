@@ -3,68 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Официальные курсы валют НБ РК </title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f9;
-        }
-        header {
-            margin-bottom: 20px;
-        }
-        h1 {
-            color: #2c3e50;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            background-color: #ffffff;
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #3498db;
-            color: white;
-            text-transform: uppercase;
-        }
-        tr:hover {
-            background-color: #f5f5f5;
-        }
-        section {
-            padding: 20px;
-            margin-top: 30px;
-            background-color: #ecf0f1;
-            border-radius: 8px;
-        }
-        .up { color: #27ae60; font-weight: bold; } /* Green */
-        .down { color: #e74c3c; font-weight: bold; } /* Red */
-        .neutral { color: #7f8c8d; } /* Gray */
-        .diff-indicator { margin-left: 8px; font-size: 0.9em; }
-        #language-switcher button {
-            padding: 8px 12px;
-            margin-right: 5px;
-            cursor: pointer;
-            border: 1px solid #bdc3c7;
-            background-color: #ffffff;
-            border-radius: 4px;
-        }
-        #language-switcher button:hover {
-            background-color: #3498db;
-            color: white;
-        }
-    </style>
+    <title>{{ MESSAGES['ru']['title'] }}</title>
+    <link rel="stylesheet" href="assets/style.css"> 
 </head>
 <body>
     <header>
-        <h1 data-key="title">Официальные курсы валют НБ РК | TengeHub</h1>
+        <h1 data-key="title">{{ MESSAGES['ru']['title'] }}</h1> 
+        
+        <nav>
+            <a href="index.html" data-key="nav_main">{{ MESSAGES['ru']['nav_main'] }}</a>
+            <a href="full_rates.html" data-key="nav_all_rates">{{ MESSAGES['ru']['nav_all_rates'] }}</a>
+            <a href="about.html" data-key="nav_about">{{ MESSAGES['ru']['nav_about'] }}</a>
+        </nav>
         
         <div id="language-switcher">
             <button onclick="setLang('ru')">RU</button>
@@ -74,524 +24,86 @@
     </header>
     
     <main>
-        <p data-key="status_prefix">Данные актуальны на: <span id="update-date">2025-11-24</span></p>
-        <p data-key="description">Интеграция с официальным SOAP-сервисом Национального Банка РК. Курсы обновляются ежедневно.</p>
+        <p class="date-info">
+            <span data-key="data_actual_on">{{ MESSAGES['ru']['data_actual_on'] }}</span> **{{ course_date }}** (официальная дата НБ РК).
+            Данные получены с официального SOAP-сервиса Национального Банка РК.
+        </p>
+        
+        <p data-key="description">{{ MESSAGES['ru']['description'] }}</p> 
 
         <table>
             <thead>
                 <tr>
-                    <th data-key="currency_name">Валюта</th>
-                    <th data-key="rate_name">Курс (KZT)</th>
-                    <th data-key="change">Изменение</th>
+                    <th data-key="currency_name">{{ MESSAGES['ru']['currency_name'] }}</th> 
+                    <th data-key="rate_name">{{ MESSAGES['ru']['rate_name'] }}</th> 
+                    <th data-key="change">{{ MESSAGES['ru']['change'] }}</th> 
                 </tr>
             </thead>
             <tbody>
-                
+                {% for rate in rates %}
                 <tr>
-                    <td>USD</td>
-                    <td>518.6600</td>
-                    <td class="neutral">
-                        +0.0000
+                    <td>{{ rate.code }} ({{ rate.ru }})</td> 
+                    <td>{{ "%.4f" | format(rate.course) }}</td> 
+                    
+                    <td class="{{ rate.diff_class | default('neutral') }}">
+                        {{ "%+.4f" | format(rate.diff | default(0)) }} 
                         <span class="diff-indicator">
-                            -
-                            
+                             {% if rate.diff > 0 %} ▲ 
+                             {% elif rate.diff < 0 %} ▼ 
+                             {% else %} - 
+                             {% endif %}
                         </span>
                     </td>
                 </tr>
-                
-                <tr>
-                    <td>EUR</td>
-                    <td>597.4400</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>RUB</td>
-                    <td>6.5600</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>AED</td>
-                    <td>141.2200</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>AMD</td>
-                    <td>1.3610</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>AUD</td>
-                    <td>333.7600</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>AZN</td>
-                    <td>305.9900</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>BRL</td>
-                    <td>97.2600</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>BYN</td>
-                    <td>152.1000</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>CAD</td>
-                    <td>368.0500</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>CHF</td>
-                    <td>643.9800</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>CNY</td>
-                    <td>72.9400</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>CZK</td>
-                    <td>24.6600</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>DKK</td>
-                    <td>80.0000</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>GBP</td>
-                    <td>677.5300</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>GEL</td>
-                    <td>193.8900</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>HKD</td>
-                    <td>66.6200</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>HUF</td>
-                    <td>1.5570</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>INR</td>
-                    <td>5.7900</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>IRR</td>
-                    <td>0.0123</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>JPY</td>
-                    <td>3.3100</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>KGS</td>
-                    <td>5.9300</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>KRW</td>
-                    <td>0.3517</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>KWD</td>
-                    <td>1688.0700</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>MDL</td>
-                    <td>30.5100</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>MXN</td>
-                    <td>28.1100</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>MYR</td>
-                    <td>125.1000</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>NOK</td>
-                    <td>50.5400</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>PLN</td>
-                    <td>140.5400</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>SAR</td>
-                    <td>138.3000</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>SEK</td>
-                    <td>54.1500</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>SGD</td>
-                    <td>396.5600</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>THB</td>
-                    <td>15.9600</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>TJS</td>
-                    <td>56.7500</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>TRY</td>
-                    <td>12.2700</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>UAH</td>
-                    <td>12.2600</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>UZS</td>
-                    <td>0.0437</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>XDR</td>
-                    <td>702.2700</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>ZAR</td>
-                    <td>29.9000</td>
-                    <td class="neutral">
-                        +0.0000
-                        <span class="diff-indicator">
-                            -
-                            
-                        </span>
-                    </td>
-                </tr>
-                
+                {% endfor %}
             </tbody>
         </table>
         
         <hr>
         
         <section>
-            <h2 data-key="partner_title">B2B API & Экспорт данных</h2>
-            <p data-key="partner_text">Получите доступ к данным в удобном формате (JSON/CSV) через наш REST API для вашей ERP, 1С или CRM.</p>
-            <a href="https://forms.google.com/your-business-form" data-key="partner_cta">Стать партнером</a>
+            <h2 data-key="partner_title">{{ MESSAGES['ru']['partner_title'] }}</h2> 
+            <p data-key="partner_text">{{ MESSAGES['ru']['partner_text'] }}</p> 
+            <a href="https://forms.google.com/your-business-form" data-key="partner_cta">{{ MESSAGES['ru']['partner_cta'] }}</a> 
         </section>
     </main>
 
     <script>
-        // ИСПРАВЛЕНИЕ: Jinja2 фильтр '| tojson' используется здесь, чтобы передать объект в JS
-        const MESSAGES_DATA = JSON.parse('{"en": {"change": "Change", "currency_name": "Currency", "currency_rate": "Rate", "description": "Integration with the official SOAP service of the National Bank of Kazakhstan. Rates are updated daily.", "partner_cta": "Become a partner", "partner_text": "Get access to data in a convenient format (JSON/CSV) via our REST API for your ERP, 1C, or CRM.", "partner_title": "B2B API \u0026 Data Export", "rate_name": "Rate (KZT)", "status_prefix": "Data is current as of", "title": "Official Exchange Rates of NBK | TengeHub"}, "kz": {"change": "\u04e8\u0437\u0433\u0435\u0440\u0456\u0441", "currency_name": "\u0412\u0430\u043b\u044e\u0442\u0430", "currency_rate": "\u0411\u0430\u0493\u0430\u043c", "description": "\u049a\u0420 \u04b0\u043b\u0442\u0442\u044b\u049b \u0411\u0430\u043d\u043a\u0456\u043d\u0456\u04a3 \u0440\u0435\u0441\u043c\u0438 SOAP-\u0441\u0435\u0440\u0432\u0438\u0441\u0456\u043c\u0435\u043d \u0438\u043d\u0442\u0435\u0433\u0440\u0430\u0446\u0438\u044f. \u0411\u0430\u0493\u0430\u043c\u0434\u0430\u0440 \u043a\u04af\u043d \u0441\u0430\u0439\u044b\u043d \u0436\u0430\u04a3\u0430\u0440\u0442\u044b\u043b\u0430\u0434\u044b.", "partner_cta": "\u0421\u0435\u0440\u0456\u043a\u0442\u0435\u0441 \u0431\u043e\u043b\u0443", "partner_text": "ERP, 1\u0421 \u043d\u0435\u043c\u0435\u0441\u0435 CRM \u0436\u04af\u0439\u0435\u043b\u0435\u0440\u0456\u04a3\u0456\u0437 \u04af\u0448\u0456\u043d \u0431\u0456\u0437\u0434\u0456\u04a3 REST API \u0430\u0440\u049b\u044b\u043b\u044b \u0434\u0435\u0440\u0435\u043a\u0442\u0435\u0440\u0433\u0435 \u044b\u04a3\u0493\u0430\u0439\u043b\u044b \u0444\u043e\u0440\u043c\u0430\u0442\u0442\u0430 (JSON/CSV) \u049b\u043e\u043b \u0436\u0435\u0442\u043a\u0456\u0437\u0456\u04a3\u0456\u0437.", "partner_title": "B2B API \u0026 \u0414\u0435\u0440\u0435\u043a\u0442\u0435\u0440 \u044d\u043a\u0441\u043f\u043e\u0440\u0442\u044b", "rate_name": "\u0411\u0430\u0493\u0430\u043c (KZT)", "status_prefix": "\u0414\u0435\u0440\u0435\u043a\u0442\u0435\u0440\u0434\u0456\u04a3 \u049b\u043e\u043b\u0434\u0430\u043d\u044b\u043b\u0443 \u043c\u0435\u0440\u0437\u0456\u043c\u0456", "title": "\u049a\u0420 \u04b0\u043b\u0442\u0442\u044b\u049b \u0411\u0430\u043d\u043a\u0456\u043d\u0456\u04a3 \u0440\u0435\u0441\u043c\u0438 \u0432\u0430\u043b\u044e\u0442\u0430 \u0431\u0430\u0493\u0430\u043c\u0434\u0430\u0440\u044b | TengeHub"}, "ru": {"change": "\u0418\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u0435", "currency_name": "\u0412\u0430\u043b\u044e\u0442\u0430", "currency_rate": "\u041a\u0443\u0440\u0441", "description": "\u0418\u043d\u0442\u0435\u0433\u0440\u0430\u0446\u0438\u044f \u0441 \u043e\u0444\u0438\u0446\u0438\u0430\u043b\u044c\u043d\u044b\u043c SOAP-\u0441\u0435\u0440\u0432\u0438\u0441\u043e\u043c \u041d\u0430\u0446\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u043e\u0433\u043e \u0411\u0430\u043d\u043a\u0430 \u0420\u041a. \u041a\u0443\u0440\u0441\u044b \u043e\u0431\u043d\u043e\u0432\u043b\u044f\u044e\u0442\u0441\u044f \u0435\u0436\u0435\u0434\u043d\u0435\u0432\u043d\u043e.", "partner_cta": "\u0421\u0442\u0430\u0442\u044c \u043f\u0430\u0440\u0442\u043d\u0435\u0440\u043e\u043c", "partner_text": "\u041f\u043e\u043b\u0443\u0447\u0438\u0442\u0435 \u0434\u043e\u0441\u0442\u0443\u043f \u043a \u0434\u0430\u043d\u043d\u044b\u043c \u0432 \u0443\u0434\u043e\u0431\u043d\u043e\u043c \u0444\u043e\u0440\u043c\u0430\u0442\u0435 (JSON/CSV) \u0447\u0435\u0440\u0435\u0437 \u043d\u0430\u0448 REST API \u0434\u043b\u044f \u0432\u0430\u0448\u0435\u0439 ERP, 1\u0421 \u0438\u043b\u0438 CRM.", "partner_title": "B2B API \u0026 \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0434\u0430\u043d\u043d\u044b\u0445", "rate_name": "\u041a\u0443\u0440\u0441 (KZT)", "status_prefix": "\u0414\u0430\u043d\u043d\u044b\u0435 \u0430\u043a\u0442\u0443\u0430\u043b\u044c\u043d\u044b \u043d\u0430", "title": "\u041e\u0444\u0438\u0446\u0438\u0430\u043b\u044c\u043d\u044b\u0435 \u043a\u0443\u0440\u0441\u044b \u0432\u0430\u043b\u044e\u0442 \u041d\u0411 \u0420\u041a | TengeHub"}}'); 
+        // Код JS для мультиязычности
+        // MESSAGES передается сюда из Flask/Django как словарь
+        const MESSAGES_DATA = JSON.parse('{{ MESSAGES | tojson }}'); 
         let currentLang = 'ru';
-
+        
+        // Добавление новых ключей для навигации в случае, если они не были в MESSAGES
+        // Этот код предполагает, что 'nav_main', 'nav_all_rates', 'nav_about' существуют в MESSAGES
+        
         function setLang(lang) {
             currentLang = lang;
-            // Обновляем атрибут lang для accessibility
             document.documentElement.lang = lang;
             
-            // Обновляем все элементы с атрибутом data-key
             document.querySelectorAll('[data-key]').forEach(element => {
                 const key = element.getAttribute('data-key');
                 if (MESSAGES_DATA[lang] && MESSAGES_DATA[lang][key]) {
+                    const text = MESSAGES_DATA[lang][key];
                     if (element.tagName === 'TITLE') {
-                        document.title = MESSAGES_DATA[lang][key];
+                        document.title = text;
                     } else {
-                        // Для ссылок обновляем текст
-                        element.textContent = MESSAGES_DATA[lang][key];
+                        element.textContent = text;
                     }
                 }
             });
+            
+            // Обновление специфичного текста (часть, которая не находится в data-key)
+            const dateInfoElement = document.querySelector('.date-info');
+            const dateSpan = dateInfoElement ? dateInfoElement.querySelector('[data-key="data_actual_on"]') : null;
+            if (dateSpan) {
+                // Восстанавливаем оригинальный текст и дату
+                const dateText = MESSAGES_DATA[lang]['data_actual_on'] + " **{{ course_date }}** (официальная дата НБ РК).";
+                dateInfoElement.innerHTML = dateText + "<br>Данные получены с официального SOAP-сервиса Национального Банка РК.";
+            }
         }
 
-        // Установить язык по умолчанию при загрузке
+        // Установка начального языка
         window.onload = () => setLang(currentLang);
     </script>
 </body>
