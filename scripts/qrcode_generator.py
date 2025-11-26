@@ -11,19 +11,18 @@ from io import BytesIO
 BASE_DOMAIN = "https://niazakhmetov.github.io/NBU" # <--- ИСПРАВЛЕННЫЙ ФОРМАТ
 VERIFY_PAGE = "verify.html"
 
-def generate_verification_url(course_date: str, currency_code: str) -> str:
+def generate_verification_url(course_date: str, currency_code: str = None) -> str:
     """
-    Формирует уникальный URL для верификации конкретного курса.
-    
-    Args:
-        course_date (str): Дата курса в формате DD.MM.YYYY.
-        currency_code (str): Трехбуквенный код валюты (напр., USD, EUR).
-        
-    Returns:
-        str: Полный URL для страницы верификации.
+    Формирует уникальный URL для верификации.
+    Если currency_code = None, то верифицируется вся дата.
     """
-    # URL будет выглядеть как: https://niazakhmetov.github.io/NBU/verify.html?d=26.11.2025&c=USD
-    return f"{BASE_DOMAIN}/{VERIFY_PAGE}?d={course_date}&c={currency_code}"
+    url = f"{BASE_DOMAIN}/{VERIFY_PAGE}?d={course_date}"
+    if currency_code:
+        url += f"&c={currency_code}"
+    return url
+
+# Вызов для главной страницы:
+# url_for_main_page = generate_verification_url(current_date)
 
 
 def generate_qr_base64(data_url: str) -> str:
