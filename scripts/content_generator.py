@@ -1,39 +1,50 @@
 # scripts/content_generator.py
+
+from jinja2 import Environment, FileSystemLoader, select_autoescape, exceptions
+import datetime
 import os
-from jinja2 import Environment, FileSystemLoader
-
-# --- Настройка окружения Jinja2 ---
-# Предполагаем, что шаблоны находятся в текущей директории или в 'templates'
-file_loader = FileSystemLoader('.') 
-env = Environment(loader=file_loader)
-
 
 def generate_page(template_file: str, output_file: str, context: dict):
     """
-    Основная функция для генерации статической HTML-страницы из шаблона.
-
-    Args:
-        template_file (str): Имя файла шаблона Jinja2 (напр., 'index_template.html').
-        output_file (str): Имя выходного HTML-файла (напр., 'index.html').
-        context (dict): Словарь данных для заполнения шаблона (курсы, дата, переводы, QR-код).
+    Генерирует статическую HTML страницу на основе Jinja2 шаблона и контекста.
     """
+    # Шаблоны ищутся в текущей директории
+    env = Environment(
+        loader=FileSystemLoader(os.getcwd()),
+        autoescape=select_autoescape(['html', 'xml'])
+    )
+    
+    # ⭐ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ:
+    # Регистрируем функцию datetime.datetime.now как глобальную функцию 'now'.
+    # Это позволяет использовать ее в шаблонах как {{ now().year }} или {{ now().date() }}
+    env.globals.update(
+        now=datetime.datetime.now,
+    )
+    
+    # Регистрируем функцию os.path.basename для удобства в статусе/отладке
+    env.globals.update(
+        basename=os.path.basename,
+    )
+
+    print(f"Генерация {output_file} (шаблон: {template_file})...")
+    
     try:
-        # 1. Загрузка шаблона
         template = env.get_template(template_file)
         
-        # 2. Рендеринг (заполнение шаблона данными из контекста)
-        output = template.render(context)
+        # Генерация и сохранение
+        html_content = template.render(context)
         
-        # 3. Сохранение результата в выходной файл
         with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(output)
+            f.write(html_content)
             
         print(f"Файл {output_file} успешно сгенерирован (шаблон: {template_file}).")
         
-    except FileNotFoundError:
-        print(f"Ошибка: Шаблон {template_file} не найден. Проверьте путь.")
+    except exceptions.TemplateNotFound as e:
+        print(f"Критическая ошибка генерации {output_file}: Шаблон '{e.name}' не найден.")
     except Exception as e:
         print(f"Критическая ошибка генерации {output_file}: {e}")
 
-# Функции generate_json_api, generate_html_page, generate_about_page 
-# удалены, так как их логика теперь должна быть реализована в scripts/main_workflow.py.
+# Пример использования:
+if __name__ == '__main__':
+    # Эта часть не должна запускаться в workflow, только для локального теста
+    pass
