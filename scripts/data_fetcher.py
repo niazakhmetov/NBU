@@ -18,20 +18,27 @@ SOAP_TEMPLATE = """<?xml version="1.0" encoding="utf-8"?>
 def fetch_xml_data():
     """
     Запрашивает актуальные курсы валют у SOAP-сервиса НБ РК.
-    Возвращает XML-ответ в виде строки.
+    Возвращает XML-ответ в виде строки или None при ошибке.
     """
     # Форматируем текущую дату в требуемом формате YYYY-MM-DD
     today = datetime.datetime.now().strftime('%Y-%m-%d')
     soap_body = SOAP_TEMPLATE.format(date=today)
     
     try:
-        response = requests.post(SOAP_URL, headers=SOAP_HEADERS, data=soap_body.encode('utf-8'))
+        # ⚠️ ИСПРАВЛЕНИЕ: Добавлен явный таймаут (10 секунд)
+        response = requests.post(
+            SOAP_URL, 
+            headers=SOAP_HEADERS, 
+            data=soap_body.encode('utf-8'),
+            timeout=10 
+        )
         response.raise_for_status() # Вызывает исключение для плохих ответов (4xx или 5xx)
         
-        # Извлекаем содержимое тега <get_ratesResult>
         # Так как это просто получение XML, мы возвращаем его для дальнейшего парсинга
         return response.text
         
     except requests.exceptions.RequestException as e:
+        # Вывод ошибки в лог, чтобы видеть, что пошло не так
         print(f"Ошибка при запросе к SOAP-сервису: {e}")
+        # При ошибке возвращаем None
         return None
