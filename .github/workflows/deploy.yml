@@ -1,7 +1,7 @@
 name: Update Currency Rates & Deploy
 
 on:
-  # Запуск по расписанию: ежедневно в 14:00 UTC
+  # Запуск по расписанию: ежедневно в 14:00 UTC (для получения данных НБ РК, которые обычно публикуются около 15:00-16:00 KZT)
   schedule:
     - cron: '0 14 * * *'
   # Возможность запуска вручную
@@ -11,7 +11,7 @@ on:
     branches:
       - main
 
-# ⭐ Установка необходимых разрешений для токена (Оставляем как есть, это важно!)
+# ⭐ Установка необходимых разрешений для токена (Обязательно для публикации на Pages)
 permissions:
   contents: read
   pages: write
@@ -35,8 +35,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           
-      - name: Run ETL Workflow # <--- ИЗМЕНЕНИЕ 1: Сменили название шага
-        run: python scripts/main_workflow.py # <--- ИЗМЕНЕНИЕ 2: Заменили файл запуска
+      - name: Run ETL Workflow & Generate Pages (SSG)
+        # Запуск главного скрипта, который теперь генерирует все HTML-файлы и api/latest.json
+        run: python scripts/main_workflow.py 
         
       - name: Setup Pages
         id: pages
@@ -44,8 +45,9 @@ jobs:
 
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
+        # Загружаем всё содержимое текущей директории, включая сгенерированные HTML и папку api/
         with:
-          path: '.' # Загружаем весь репозиторий, включая index.html и папку api/
+          path: '.' 
           
   deploy:
     environment:
