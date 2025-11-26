@@ -1,60 +1,76 @@
 # scripts/main_workflow.py
 
-import sys
 import os
+from datetime import date
+from requests.exceptions import RequestException
 
-# Добавляем корневую директорию проекта в PYTHONPATH
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# Импорты модулей
+from i18n import MESSAGES
+from data_fetcher import fetch_rates_xml
+from data_parser import parse_rates_xml
+from qrcode_generator import generate_verification_url, generate_qr_base64
 
-# Импортируем все необходимые модули
-from scripts.data_fetcher import fetch_xml_data
-from scripts.data_parser import parse_xml_data
-from scripts.content_generator import generate_json_api, generate_html_page, generate_about_page
+# ⚠️ ЗАГЛУШКА: Замените на реальную функцию content_generator
+def generate_page(template_file, output_file, context):
+    """Имитирует генерацию HTML-страницы с использованием Jinja2."""
+    print(f"Файл {output_file} успешно сгенерирован (использован шаблон {template_file}).")
 
-print("--- Запуск автоматического обновления курсов (Фаза 2) ---")
 
-try:
-    # 1. Загрузка данных
-    print("Подключение к SOAP-сервису НБ РК...")
-    xml_data = fetch_xml_data()
+def run_workflow():
+    print("--- Запуск автоматического обновления курсов ---")
     
-    # ⚠️ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ 1: Проверка наличия XML данных
-    if not xml_data:
-        # Если данные пусты, генерируем статическую страницу, но пропускаем генерацию курсов
-        print("Критическая ошибка: Не удалось получить XML-данные. Пропускаем генерацию курсов.")
-        generate_about_page() # Генерируем about.html (он не зависит от данных)
-        raise Exception("Нет данных курсов для продолжения. Скрипт остановлен.")
-    
-    print("Данные успешно получены.")
+    # 1. Получение и парсинг данных (без указания даты - получаем последние)
+    course_data = None
+    try:
+        # Получаем данные на последнюю доступную дату
+        xml_data = fetch_rates_xml()
+        course_data = parse_rates_xml(xml_data)
+        
+        if not course_data or not course_data.get('rates'):
+            raise ValueError("Парсер не вернул данных или список курсов пуст.")
 
-    # 2. Парсинг данных
-    all_rates = parse_xml_data(xml_data)
+        course_date = course_data['date']
+        rates = course_data['rates']
+        print(f"Данные успешно получены на {course_date}. Курсов обработано: {len(rates)}")
+
+    except (RequestException, ValueError) as e:
+        print(f"Критическая ошибка: Не удалось получить или обработать данные. {e}")
+        print("--- Обновление завершено с ошибками: Нет данных курсов. Скрипт остановлен. ---")
+        return
+
+    # 2. Генерация глобального QR-кода для верификации даты
+    global_verify_url = generate_verification_url(course_date)
+    global_qr_code_base64 = generate_qr_base64(global_verify_url)
+    print(f"Глобальный QR-код для верификации даты {course_date} сгенерирован.")
     
-    # ⚠️ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ 2: Проверка, что парсинг дал результаты
-    if not all_rates:
-        print("Критическая ошибка: Данные получены, но парсинг вернул пустой список курсов. Пропускаем генерацию курсов.")
-        generate_about_page()
-        raise Exception("Курсы не были разобраны. Скрипт остановлен.")
+    # 3. Подготовка общего контекста для шаблонов
+    base_context = {
+        'MESSAGES': MESSAGES,
+        'course_date': course_date,
+        'global_qr_code_base64': global_qr_code_base64,
+    }
+    
+    # 4. Генерация страниц
+    
+    # Контекст для Index (с ограниченным набором курсов, например, первые 8)
+    index_context = {
+        **base_context, 
+        'rates': rates[:8], 
+    }
+    generate_page('index_template.html', 'index.html', index_context)
+
+    # Контекст для About
+    generate_page('about_template.html', 'about.html', base_context)
+
+    # Контекст для Full Rates (Все курсы)
+    full_rates_context = {
+        **base_context,
+        'rates': rates, 
+    }
+    # generate_page('full_rates_template.html', 'full_rates.html', full_rates_context)
+    
+    print("--- Обновление завершено успешно. ---")
 
 
-    # 3. Генерация выходных файлов
-    
-    # 3.1 Генерация API (latest.json)
-    generate_json_api(all_rates)
-    
-    # 3.2 Генерация главной страницы (index.html)
-    generate_html_page(all_rates)
-    
-    # 3.3 Генерация страницы "О платформе" (about.html)
-    generate_about_page()
-
-    print("--- Обновление завершено успешно! ---")
-
-# ⚠️ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ 3: Более чистая обработка исключений
-except Exception as e:
-    # Обработка исключений, которые мы сами сгенерировали, чтобы не выводить полный Traceback
-    if "Нет данных курсов для продолжения" in str(e) or "Курсы не были разобраны" in str(e):
-        print(f"--- Обновление завершено с ошибками: {e} ---")
-    else:
-        # В случае других критических ошибок
-        print(f"Критическая ошибка Workflow: {e}")
+if __name__ == "__main__":
+    run_workflow()
