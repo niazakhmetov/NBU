@@ -12,7 +12,6 @@
     
     {# =================================================================
        1. ШАПКА, НАВИГАЦИЯ И КОНТРОЛЫ
-       (Использует стили .navbar и .controls-group из main.css)
        ================================================================= #}
     <header>
         <div class="container navbar">
@@ -29,7 +28,6 @@
             {# ⭐ Группа переключения языка и темы #}
             <div class="controls-group">
                 <div id="language-switcher">
-                    {# ⭐ ИСПРАВЛЕНИЕ: setLang теперь перезагружает страницу для смены локализации #}
                     <button class="theme-toggle" onclick="setLang('ru')" data-lang="ru">RU</button>
                     <button class="theme-toggle" onclick="setLang('kz')" data-lang="kz">KZ</button>
                     <button class="theme-toggle" onclick="setLang('en')" data-lang="en">EN</button>
@@ -51,22 +49,21 @@
             {{ L.title_main | default('Курсы валют Национального Банка РК') }}
         </h1>
 
-        {# --- ⭐ НОВЫЙ БЛОК: СТАТУС И ВРЕМЯ ОБНОВЛЕНИЯ --- #}
+        {# --- ⭐ НОВЫЙ БЛОК: КРАТКАЯ ИНФОРМАЦИЯ О СИСТЕМЕ (На основе страницы "Статус") --- #}
         <section class="card" style="margin-top: 20px; padding: 15px 30px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; border-left: 5px solid var(--color-brand-primary);">
             <div style="margin-right: 20px; margin-bottom: 10px;">
                 <span style="font-weight: 600; color: var(--color-text-primary);">
-                    {{ L.status_api_health | default('Статус API:') }}
+                    {{ L.status_sync | default('Статус синхронизации:') }}
                 </span>
                 <span id="api-status" 
-                      {# Используем классы change-up/down для цвета статуса #}
-                      class="{% if api_status == 'OK' %}change-up{% else %}change-down{% endif %}"
+                      class="{% if api_status == 'УСПЕШНО' %}change-up{% else %}change-down{% endif %}"
                       style="font-size: 1.1em; margin-left: 5px;">
                     {{ api_status | default('Проверка...') }}
                 </span>
             </div>
             <div style="margin-bottom: 10px;">
                 <span style="font-weight: 600; color: var(--color-text-primary);">
-                    {{ L.status_last_update | default('Последнее обновление курсов:') }}
+                    {{ L.status_last_update_time | default('Время последнего обновления:') }}
                 </span>
                 <span id="update-time" style="color: var(--color-brand-secondary); margin-left: 5px;">
                     {{ update_time | default('N/A') }}
@@ -74,7 +71,7 @@
             </div>
         </section>
 
-        {# --- БЛОК С ДАТОЙ И КРАТКОЙ ИНФОРМАЦИЕЙ --- #}
+        {# --- БЛОК С ДАТОЙ АКТУАЛЬНОСТИ КУРСОВ --- #}
         <section class="card" style="margin-top: 20px;">
             <p style="color: var(--color-text-secondary);">
                 {{ L.date_info | default('Официальные курсы Национального Банка Республики Казахстан, действительные на:') }}
@@ -89,7 +86,7 @@
             </p>
         </section>
 
-        {# --- ТАБЛИЦА КЛЮЧЕВЫХ ВАЛЮТ --- #}
+        {# --- ТАБЛИЦА 10 ОСНОВНЫХ ВАЛЮТ --- #}
         <section class="card" style="padding: 0; margin-top: 30px;">
             <table class="data-table">
                 <thead>
@@ -101,8 +98,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {# ⭐ Итерация по данным курсов #}
-                    {% for item in key_rates %}
+                    {# ⭐ Итерация по первым 10 элементам списка key_rates #}
+                    {% for item in key_rates[:10] %}
                     <tr>
                         <td data-label="{{ L.table_currency | default('Валюта') }}">{{ item.fullname | default('Неизвестно') }} ({{ item.title }})</td>
                         <td data-label="{{ L.table_rate | default('Курс (KZT)') }}" style="text-align: center;">{{ item.description }}</td>
@@ -123,7 +120,7 @@
     </main>
     
     {# =================================================================
-       3. ПОДВАЛ (Унифицированный стиль и новый текст УТП)
+       3. ПОДВАЛ (Новый текст УТП)
        ================================================================= #}
     <footer>
         <div class="container">
@@ -137,9 +134,8 @@
        4. JS ДЛЯ МУЛЬТИЯЗЫЧНОСТИ И ТЕМЫ
        ================================================================= #}
     <script>
-        // --- Переключение языка: ПЕРЕЗАГРУЖАЕТ страницу с новым параметром lang ---
+        // --- Переключение языка: ПЕРЕЗАГРУЖАЕТ страницу с новым параметром lang (ИСПРАВЛЕНО) ---
         function setLang(lang) {
-            // Удаляем старый параметр 'lang' и добавляем новый
             const url = new URL(window.location.href);
             url.searchParams.set('lang', lang);
             window.location.href = url.toString();
@@ -155,7 +151,6 @@
             const isDark = body.classList.contains('dark-theme');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
             
-            // Обновление иконки кнопки
             btn.textContent = isDark ? '🌙' : '☀️';
         }
 
@@ -179,7 +174,6 @@
                 document.body.classList.add('dark-theme');
                 btn.textContent = '🌙';
             } else {
-                // Если тема не сохранена или 'light', устанавливаем светлую тему по умолчанию
                 document.body.classList.remove('dark-theme');
                 btn.textContent = '☀️';
             }
