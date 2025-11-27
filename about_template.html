@@ -3,86 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ MESSAGES['ru']['title_about'] }}</title>
+    {# Использование Jinja-переменной L вместо прямого обращения к словарю MESSAGES #}
+    <title>{{ L.nav_about }} | TengeHub</title>
     
-    <link rel="stylesheet" href="assets/style.css"> 
-    
-    <style>
-        .content-box { 
-            background-color: #ffffff; 
-            padding: 25px; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); 
-            margin-top: 20px; /* Немного отступа от навигации */
-        }
-        .tech-detail { 
-            border-left: 3px solid #f39c12; /* Оранжевая линия */
-            padding-left: 15px; 
-            margin-top: 15px; 
-        }
-        .tech-detail p {
-            margin-bottom: 10px;
-        }
-    </style>
+    {# ⭐ КРИТИЧЕСКОЕ ИЗМЕНЕНИЕ: Подключение единого файла стилей #}
+    <link rel="stylesheet" href="styles/main.css"> 
 </head>
 <body>
+    
+    {# =================================================================
+       1. ШАПКА И НАВИГАЦИЯ (Использование классов .navbar и .logo)
+       ================================================================= #}
     <header>
-        <h1 data-key="title_about">{{ MESSAGES['ru']['title_about'] }}</h1>
-        
-        <nav>
-            <a href="index.html" data-key="nav_main">{{ MESSAGES['ru']['nav_main'] }}</a>
-            <a href="full_rates.html" data-key="nav_all_rates">{{ MESSAGES['ru']['nav_all_rates'] }}</a>
-            <a href="about.html" data-key="nav_about">{{ MESSAGES['ru']['nav_about'] }}</a>
-        </nav>
-        
-        <div id="language-switcher">
-            <button onclick="setLang('ru')">RU</button>
-            <button onclick="setLang('kz')">KZ</button>
-            <button onclick="setLang('en')">EN</button>
+        <div class="container navbar">
+            <div class="logo">TengeHub</div> 
+            
+            <nav>
+                <a href="index.html">{{ L.nav_main }}</a>
+                <a href="full_rates.html">{{ L.nav_all_rates }}</a>
+                {# Устанавливаем активный класс для текущей страницы #}
+                <a href="about.html" class="active">{{ L.nav_about }}</a>
+                <a href="status.html">{{ L.nav_status | default('Статус') }}</a> 
+            </nav>
+            
+            {# ⭐ Мультиязычность: Строгое оформление #}
+            <div id="language-switcher">
+                {# Используем общий стиль кнопок из main.css (.theme-toggle, как нейтральная кнопка) #}
+                <button class="theme-toggle" onclick="setLang('ru')" data-lang="ru">RU</button>
+                <button class="theme-toggle" onclick="setLang('kz')" data-lang="kz">KZ</button>
+                <button class="theme-toggle" onclick="setLang('en')" data-lang="en">EN</button>
+            </div>
         </div>
     </header>
     
-    <main class="content-box">
-        <h2 data-key="about_h2">{{ MESSAGES['ru']['about_h2'] }}</h2>
-        <p data-key="about_p1">{{ MESSAGES['ru']['about_p1'] }}</p>
+    {# =================================================================
+       2. ОСНОВНОЙ КОНТЕНТ (Разделен на логические .card блоки)
+       ================================================================= #}
+    <main class="container">
+        
+        <h1 style="margin-bottom: 25px;">{{ L.nav_about }}</h1>
 
-        <h3 data-key="tech_h3">{{ MESSAGES['ru']['tech_h3'] }}</h3>
-        <div class="tech-detail">
-            <p><strong><span data-key="tech_step1_h">1. Источник данных:</span></strong> <span data-key="tech_step1_p">{{ MESSAGES['ru']['tech_step1_p'] }}</span></p>
-            <p><strong><span data-key="tech_step2_h">2. Автоматизация:</span></strong> <span data-key="tech_step2_p">{{ MESSAGES['ru']['tech_step2_p'] }}</span></p>
-            <p><strong><span data-key="tech_step3_h">3. Генерация:</span></strong> <span data-key="tech_step3_p">{{ MESSAGES['ru']['tech_step3_p'] }}</span></p>
-        </div>
+        {# --- БЛОК 1: О ПРОЕКТЕ --- #}
+        <section class="card">
+            <h2 data-key="about_h2">{{ L.about_h2 | default('О проекте TengeHub') }}</h2>
+            <p data-key="about_p1" style="color: var(--color-text-secondary);">
+                {{ L.about_p1 | default('TengeHub — это независимая платформа для обеспечения прозрачного и оперативного доступа к официальным обменным курсам Национального Банка Республики Казахстан.') }}
+            </p>
+            <p data-key="about_p2" style="color: var(--color-text-secondary); margin-top: 10px;">
+                {{ L.about_p2 | default('Мы стремимся предоставить надежный инструмент для бухгалтерского учета, аудита и анализа рыночных данных.') }}
+            </p>
+        </section>
+
+        {# --- БЛОК 2: ИСТОЧНИК ДАННЫХ И ТЕХНОЛОГИИ (Строгий стиль) --- #}
+        <section class="card" style="margin-top: 30px;">
+            <h2 data-key="tech_h3">{{ L.tech_h3 | default('Источник данных и Технологии') }}</h2>
+            
+            {# Использование стилей для выделения ключевых деталей #}
+            <div class="tech-detail" style="border-left: 3px solid var(--color-brand-primary); padding-left: 15px; margin-top: 20px;">
+                <p>
+                    <strong><span data-key="tech_step1_h">1. Источник данных:</span></strong> 
+                    <span data-key="tech_step1_p">{{ L.tech_step1_p | default('Все курсы получены исключительно через официальный XML API Национального Банка РК.') }}</span>
+                </p>
+                <p>
+                    <strong><span data-key="tech_step2_h">2. Актуальность:</span></strong> 
+                    <span data-key="tech_step2_p">{{ L.tech_step2_p | default('Обновление и генерация страниц происходит ежедневно по расписанию.') }}</span>
+                </p>
+                <p>
+                    <strong><span data-key="tech_step3_h">3. Верификация:</span></strong> 
+                    <span data-key="tech_step3_p">{{ L.tech_step3_p | default('Каждая страница курсов снабжена QR-кодом для прямой верификации с официальным источником НБ РК.') }}</span>
+                </p>
+            </div>
+        </section>
         
-        <h3 data-key="source_h3">{{ MESSAGES['ru']['source_h3'] }}</h3>
-        <p data-key="source_p">{{ MESSAGES['ru']['source_p'] }}</p>
+        {# --- БЛОК 3: КОНТАКТЫ И ЮРИДИЧЕСКИЙ ДИСКЛЕЙМЕР --- #}
+        <section class="card" style="margin-top: 30px;">
+            <h2 data-key="source_h3">{{ L.source_h3 | default('Важное уведомление (Disclaimer)') }}</h2>
+            <p data-key="source_p" style="color: var(--color-status-down); font-weight: 500;">
+                {{ L.source_p | default('Данные курсов являются официальными данными Национального Банка РК. Однако, TengeHub не несет ответственности за их использование в финансовых операциях. Все курсы носят информационный характер.') }}
+            </p>
+            
+            <p data-key="contact_cta" style="margin-top: 20px;">
+                <a href="#" style="font-weight: 600;">{{ L.contact_cta | default('Свяжитесь с нами для сотрудничества или получения расширенного API.') }}</a>
+            </p>
+        </section>
         
-        <p data-key="contact_cta">{{ MESSAGES['ru']['contact_cta'] | default('Свяжитесь с нами для сотрудничества.') }}</p>
     </main>
+    
+    {# =================================================================
+       3. ПОДВАЛ (Использование тега <footer> и стилей из main.css)
+       ================================================================= #}
+    <footer>
+        <div class="container">
+            <p>
+                &copy; {{ now().strftime('%Y') | default('2025') }} TengeHub. 
+                <span style="font-weight: 600;">{{ L.source_p_short | default('Источник: НБ РК.') }}</span>
+            </p>
+        </div>
+    </footer>
 
+    {# =================================================================
+       4. JS ДЛЯ МУЛЬТИЯЗЫЧНОСТИ (Сохранен без изменений функционала)
+       ================================================================= #}
     <script>
-        // Код JS для мультиязычности
+        // Предполагается, что MESSAGES['ru'] передается в контексте шаблона Jinja
         const MESSAGES_DATA = JSON.parse('{{ MESSAGES | tojson }}'); 
-        let currentLang = 'ru';
+        // Начальный язык берется из переменной L.language_code, если доступна, иначе 'ru'
+        let currentLang = '{{ L.language_code | default("ru") }}'; 
 
+        // Функция для обновления текстов на странице
         function setLang(lang) {
             currentLang = lang;
             document.documentElement.lang = lang;
             
-            document.querySelectorAll('[data-key]').forEach(element => {
-                const key = element.getAttribute('data-key');
-                if (MESSAGES_DATA[lang] && MESSAGES_DATA[lang][key]) {
-                    const text = MESSAGES_DATA[lang][key];
-                    if (element.tagName === 'TITLE') {
-                        document.title = text;
-                    } else {
-                        element.textContent = text;
-                    }
+            // Обновление активного состояния кнопок
+            document.querySelectorAll('#language-switcher button').forEach(btn => {
+                if (btn.getAttribute('data-lang') === lang) {
+                    btn.style.backgroundColor = 'var(--color-brand-secondary)';
+                    btn.style.color = 'var(--color-text-light)';
+                } else {
+                    btn.style.backgroundColor = 'var(--color-background-card)';
+                    btn.style.color = 'var(--color-text-primary)';
                 }
             });
+            
+            // Обновление всех элементов с data-key
+            document.querySelectorAll('[data-key]').forEach(element => {
+                const key = element.getAttribute('data-key');
+                const text = MESSAGES_DATA[lang] && MESSAGES_DATA[lang][key] ? MESSAGES_DATA[lang][key] : element.textContent;
+                
+                // Обработка TITLE (особый случай, нет data-key в заголовке)
+                if (key === 'nav_about') {
+                     document.title = text + ' | TengeHub';
+                }
+                
+                // Для всех остальных элементов
+                if (element.tagName !== 'TITLE') {
+                     element.textContent = text;
+                }
+            });
+
+            // Обновление заголовка (h1)
+            document.querySelector('h1').textContent = MESSAGES_DATA[lang]['nav_about'];
         }
 
-        // Установка начального языка
-        window.onload = () => setLang(currentLang);
+        // Установка начального языка при загрузке страницы
+        window.onload = () => {
+            // Исправляем title, так как data-key на нем отсутствует
+            document.title = (MESSAGES_DATA[currentLang]['nav_about'] || 'О проекте') + ' | TengeHub';
+            setLang(currentLang);
+        };
     </script>
 </body>
 </html>
