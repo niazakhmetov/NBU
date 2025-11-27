@@ -3,134 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ L.title }} | TengeHub</title>
+    <title>{{ L.title }}</title>
     
-    {# ⭐ КРИТИЧЕСКОЕ ИЗМЕНЕНИЕ: Подключение единого файла стилей #}
-    <link rel="stylesheet" href="styles/main.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 20px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+        h1 {
+            color: #007bff;
+            font-size: 24px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .change-up { color: green; font-weight: bold; }
+        .change-down { color: red; font-weight: bold; }
+        .verification-box {
+            display: flex;
+            align-items: center;
+            background: #e9f7ff;
+            border: 1px solid #007bff;
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        .qr-code {
+            flex-shrink: 0;
+            margin-right: 20px;
+            border: 1px solid #ccc;
+        }
+        .verification-text {
+            flex-grow: 1;
+        }
+        footer {
+            margin-top: 40px;
+            padding: 20px 0;
+            border-top: 1px solid #eee;
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
 </head>
 <body>
-    
-    {# =================================================================
-       1. ШАПКА И НАВИГАЦИЯ (Использование классов .navbar и .logo)
-       ================================================================= #}
     <header>
-        <div class="container navbar">
-            {# Заменен h1 на div.logo для чистого корпоративного вида #}
-            <div class="logo">TengeHub</div> 
-            
-            <nav>
-                {# Устанавливаем активный класс для текущей страницы #}
-                <a href="index.html" class="active">{{ L.nav_main }}</a>
-                <a href="full_rates.html">{{ L.nav_all_rates }}</a>
-                <a href="about.html">{{ L.nav_about }}</a>
-                <a href="status.html">{{ L.nav_status }}</a> 
-            </nav>
-        </div>
+        <h1>TengeHub | {{ L.nav_main }}</h1>
+        <nav>
+            <a href="index.html">{{ L.nav_main }}</a>
+            <a href="full_rates.html">{{ L.nav_all_rates }}</a>
+            <a href="about.html">{{ L.nav_about }}</a>
+            <a href="status.html">{{ L.nav_status }}</a> 
+        </nav>
     </header>
 
-    {# =================================================================
-       2. ОСНОВНОЙ КОНТЕНТ (Использование класса .container и .card)
-       ================================================================= #}
     <div class="container">
-        
-        <div class="card">
-            
-            {# Строгий заголовок #}
-            <h2>{{ L.h1_main_rates }}</h2>
-            
-            <p>
-                {{ L.data_actual_on }}: 
-                <span style="font-weight: 600; color: var(--color-brand-primary);">{{ course_date }}</span>
-            </p>
-            <p style="margin-bottom: 25px;">
-                {{ L.description }}
-            </p>
 
-            <section class="main-rates">
-                
-                {# Использование класса .data-table из main.css #}
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 8%;">Код</th>
-                            <th style="width: 40%;">{{ L.CURRENCY_NAME }}</th>
-                            <th style="width: 15%;">Кол-во</th>
-                            <th style="width: 25%; text-align: right;">{{ L.RATE_NAME }} (за 1 KZT)</th>
-                            <th style="width: 12%; text-align: right;">{{ L.CHANGE }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for rate in rates %}
-                        <tr>
-                            <td>{{ rate.code }}</td>
-                            <td>{{ rate.full_name }}</td>
-                            <td>{{ rate.quant }}</td>
-                            <td style="text-align: right; font-weight: 500;">{{ "%.4f" | format(rate.course) }}</td> 
-                            {# Использование классов .change-up/.change-down из main.css #}
-                            <td class="{% if rate.change > 0 %}change-up{% elif rate.change < 0 %}change-down{% else %}change-neutral{% endif %}" style="text-align: right;">
-                                {% if rate.change > 0 %}+{% endif %}
-                                {{ "%.4f" | format(rate.change) }}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <p style="text-align: right; margin-top: 20px;">
-                    <a href="full_rates.html" style="font-weight: 600;">
-                        {{ L.nav_all_rates }} &rarr;
-                    </a>
-                </p>
-            </section>
-        </div>
-        
-        {# =================================================================
-           3. БЛОК ВЕРИФИКАЦИИ (Использование классов, улучшенная структура)
-           ================================================================= #}
-        <div class="card verification-box" style="display: flex; align-items: center; background: var(--color-background-page); border: 1px solid var(--color-border);">
-            
-            <div class="qr-code" style="flex-shrink: 0; margin-right: 20px; border: 1px solid var(--color-border); padding: 5px; background: var(--color-background-card);">
-                {# ⭐ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Добавлен префикс data:image/png;base64, #}
-                <img src="data:image/png;base64,{{ global_qr_code_base64 }}" 
+        <h2>
+            {{ L.data_actual_on }}: <span style="color: #d9534f;">{{ course_date }}</span>
+        </h2>
+        <p>{{ L.description }}</p>
+
+        <section class="main-rates">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">Код</th>
+                        <th style="width: 45%;">{{ L.CURRENCY_NAME }}</th>
+                        <th style="width: 20%;">Кол-во</th>
+                        <th style="width: 20%;">{{ L.RATE_NAME }}</th>
+                        <th style="width: 10%;">{{ L.CHANGE }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rate in rates %}
+                    <tr>
+                        <td>{{ rate.code }}</td>
+                        <td>{{ rate.full_name }}</td>
+                        <td>{{ rate.quant }}</td>
+                        <td>{{ "%.4f" | format(rate.course) }}</td> 
+                        <td class="{% if rate.change > 0 %}change-up{% elif rate.change < 0 %}change-down{% endif %}">
+                            {% if rate.change > 0 %}+{% endif %}
+                            {{ "%.4f" | format(rate.change) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p style="text-align: right; margin-top: 20px;">
+                <a href="full_rates.html">{{ L.nav_all_rates }} &rarr;</a>
+            </p>
+        </section>
+
+        <section class="verification-box">
+            <div class="qr-code">
+                <img src="{{ global_qr_code_base64 }}" 
                      alt="QR Code для верификации курсов" 
                      style="width: 120px; height: 120px; display: block;">
             </div>
             
             <div class="verification-text">
-                <p style="font-weight: 600; color: var(--color-brand-primary);">
+                <p>
                     {{ L.qr_verification_text | safe }} <b>{{ course_date }}</b>.
                 </p>
                 <p>
-                    <small style="color: var(--color-text-secondary);">
-                        {{ L.qr_disclaimer }}
-                    </small>
-                </p>
-                <p style="margin-top: 10px;">
-                    <a href="verify.html?d={{ course_date }}" style="font-weight: 600;">
-                        Перейти на страницу верификации &rarr;
-                    </a>
+                    <small>Наведите камеру или сканер для перехода на страницу официального подтверждения.</small>
                 </p>
             </div>
-        </div>
-    </div>
-    
-    {# =================================================================
-       4. ПОДВАЛ (Использование тега <footer> и стилей из main.css)
-       ================================================================= #}
-    <footer>
-        <div class="container">
-            <p style="margin-bottom: 10px;">
-                <a href="about.html" style="font-weight: 600; color: var(--color-brand-primary);">
-                    {{ L.partner_title }}
-                </a>
-            </p>
+        </section>
+
+        <footer>
+            <h3>{{ L.partner_title }}</h3>
+            <p>{{ L.partner_text }}</p>
             <p>
-                <small>{{ L.partner_text }}</small>
+                <a href="about.html">{{ L.partner_cta }}</a>
             </p>
-            <p style="margin-top: 15px;">
-                &copy; {{ now().strftime('%Y') | default('2025') }} TengeHub. 
-                <span style="font-weight: 600;">{{ L.source_p }}</span>
-            </p>
-        </div>
-    </footer>
+            {# ⭐ ИСПРАВЛЕНИЕ: Заменен фильтр на вызов метода .strftime() #}
+            <p style="margin-top: 15px;">&copy; {{ now().strftime('%Y') | default('2025') }} TengeHub. {{ L.source_p }}</p>
+        </footer>
+    </div>
 </body>
 </html>
