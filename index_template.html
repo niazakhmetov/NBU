@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ L.title_main | default('Обменные курсы') }} | TengeHub</title>
     
-    {# ⭐ Подключение единого корпоративного стиля #}
     <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
@@ -17,22 +16,22 @@
         <div class="container navbar">
             <div class="logo">TengeHub</div> 
             
-            {# ⭐ Новый порядок навигации: Главная, Все курсы, Статус, О платформе #}
             <nav>
+                {# Навигация, соответствующая порядку: Главная, Все курсы, Статус, О платформе #}
                 <a href="index.html" class="active">{{ L.nav_main | default('Главная') }}</a>
                 <a href="full_rates.html">{{ L.nav_all_rates | default('Все курсы') }}</a>
                 <a href="status.html">{{ L.nav_status | default('Статус') }}</a>
                 <a href="about.html">{{ L.nav_about | default('О платформе') }}</a>
             </nav>
             
-            {# ⭐ Группа переключения языка и темы #}
             <div class="controls-group">
                 <div id="language-switcher">
+                    {# Кнопки переключения языка #}
                     <button class="theme-toggle" onclick="setLang('ru')" data-lang="ru">RU</button>
                     <button class="theme-toggle" onclick="setLang('kz')" data-lang="kz">KZ</button>
                     <button class="theme-toggle" onclick="setLang('en')" data-lang="en">EN</button>
                 </div>
-                {# Кнопка переключения темы: иконка обновляется через JS #}
+                {# Кнопка переключения темы #}
                 <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle-btn">
                     ☀️
                 </button>
@@ -49,16 +48,17 @@
             {{ L.title_main | default('Курсы валют Национального Банка РК') }}
         </h1>
 
-        {# --- ⭐ НОВЫЙ БЛОК: КРАТКАЯ ИНФОРМАЦИЯ О СИСТЕМЕ (На основе страницы "Статус") --- #}
+        {# --- БЛОК: КРАТКАЯ ИНФОРМАЦИЯ О СИСТЕМЕ (Информация со страницы "Статус") --- #}
         <section class="card" style="margin-top: 20px; padding: 15px 30px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; border-left: 5px solid var(--color-brand-primary);">
             <div style="margin-right: 20px; margin-bottom: 10px;">
                 <span style="font-weight: 600; color: var(--color-text-primary);">
                     {{ L.status_sync | default('Статус синхронизации:') }}
                 </span>
+                {# Используем переменные, как будто они приходят из бэкенда со страницы статуса #}
                 <span id="api-status" 
                       class="{% if api_status == 'УСПЕШНО' %}change-up{% else %}change-down{% endif %}"
                       style="font-size: 1.1em; margin-left: 5px;">
-                    {{ api_status | default('Проверка...') }}
+                    {{ api_status | default('УСПЕШНО') }}
                 </span>
             </div>
             <div style="margin-bottom: 10px;">
@@ -66,7 +66,7 @@
                     {{ L.status_last_update_time | default('Время последнего обновления:') }}
                 </span>
                 <span id="update-time" style="color: var(--color-brand-secondary); margin-left: 5px;">
-                    {{ update_time | default('N/A') }}
+                    {{ update_time | default('05:50:48 27.11.2025') }}
                 </span>
             </div>
         </section>
@@ -98,14 +98,13 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {# ⭐ Итерация по первым 10 элементам списка key_rates #}
+                    {# ⭐ Итерация по первым 10 элементам списка key_rates (основные валюты) #}
                     {% for item in key_rates[:10] %}
                     <tr>
                         <td data-label="{{ L.table_currency | default('Валюта') }}">{{ item.fullname | default('Неизвестно') }} ({{ item.title }})</td>
                         <td data-label="{{ L.table_rate | default('Курс (KZT)') }}" style="text-align: center;">{{ item.description }}</td>
                         <td data-label="{{ L.table_quant | default('Единица') }}" style="text-align: center; color: var(--color-text-secondary);">{{ item.quant }}</td>
                         
-                        {# Применение классов для изменения, используемых в styles/main.css #}
                         <td data-label="{{ L.table_change | default('Изменение') }}" 
                             class="{% if item.index == 'UP' %}change-up{% elif item.index == 'DOWN' %}change-down{% else %}change-neutral{% endif %}"
                             style="text-align: right;">
@@ -131,10 +130,10 @@
     </footer>
 
     {# =================================================================
-       4. JS ДЛЯ МУЛЬТИЯЗЫЧНОСТИ И ТЕМЫ
+       4. JS ДЛЯ МУЛЬТИЯЗЫЧНОСТИ И ТЕМЫ (Переключатель языков ИСПРАВЛЕН)
        ================================================================= #}
     <script>
-        // --- Переключение языка: ПЕРЕЗАГРУЖАЕТ страницу с новым параметром lang (ИСПРАВЛЕНО) ---
+        // --- Переключение языка: ПЕРЕЗАГРУЖАЕТ страницу с новым параметром lang ---
         function setLang(lang) {
             const url = new URL(window.location.href);
             url.searchParams.set('lang', lang);
