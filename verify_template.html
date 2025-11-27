@@ -5,189 +5,173 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ L.nav_verify_title }} | TengeHub</title>
     
+    {# ⭐ КРИТИЧЕСКОЕ ИЗМЕНЕНИЕ: Подключение единого файла стилей #}
+    <link rel="stylesheet" href="styles/main.css">
+    
+    {# Встроенный CSS для элементов, которые должны иметь специфичное оформление, не включенное в main.css #}
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f7f9;
-            color: #333;
-            line-height: 1.6;
-        }
-        .container {
-            width: 90%;
-            max-width: 800px;
-            margin: 40px auto;
-            background: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        header {
-            background-color: #007bff;
-            color: white;
-            padding: 15px 0;
-            text-align: center;
-            border-radius: 8px 8px 0 0;
-            margin-bottom: 20px;
-        }
-        nav a {
-            color: white;
-            text-decoration: none;
-            margin: 0 15px;
-            font-weight: bold;
-        }
-        h1 {
-            color: #007bff;
-            font-size: 28px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        /* Стиль для блока QR-кода */
+        /* Стиль для блока QR-кода (похож на .card, но с фиксированным расположением элементов) */
         .qr-box {
-            padding: 20px; 
-            border: 1px solid #b3e5fc; 
-            border-radius: 6px; 
-            margin-bottom: 20px; 
-            background-color: #e1f5fe; 
             display: flex; 
             align-items: flex-start;
+            gap: 20px;
+            padding: 20px; 
+            border: 1px solid var(--color-border); 
+            border-radius: var(--border-radius);
+            margin-bottom: 30px; 
+            background-color: var(--color-background-card);
         }
         .qr-image-wrapper {
-            margin-right: 20px; 
-            border: 1px solid #ccc; 
+            /* Строгая граница для QR-кода */
+            border: 1px solid var(--color-border-dark); 
             padding: 5px;
             flex-shrink: 0;
+            background-color: var(--color-background-default);
         }
         .qr-image {
             width: 150px; 
             height: 150px; 
             display: block;
         }
-        /* Конец стиля для QR-кода */
+        /* Сохраняем стили для статуса, если они не полностью перекрываются в main.css */
         .verification-result {
             padding: 25px;
-            border-radius: 6px;
+            border-radius: var(--border-radius);
             text-align: center;
             margin-bottom: 30px;
             font-size: 1.2em;
             font-weight: bold;
             transition: all 0.3s ease;
         }
-        .status-checking { background-color: #ffc107; color: #333; }
-        .status-success { background-color: #28a745; color: white; }
-        .status-error { background-color: #dc3545; color: white; }
-        
-        .data-table {
-            width: 100%;
-            border: 1px solid #eee;
-            border-radius: 4px;
-            border-collapse: collapse; /* Добавлено для лучшего вида */
-        }
-        .data-table th, .data-table td {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-        }
-        .data-table th {
-            width: 40%;
-            background-color: #f8f8f8;
-            font-weight: bold;
-            text-align: right;
-        }
-        .disclaimer {
-            margin-top: 40px;
-            padding: 15px;
-            border-top: 1px solid #eee;
-            font-size: 0.9em;
-            color: #666;
-            text-align: center;
-        }
+        /* Используем классы статуса из main.css (.change-up, .change-down) для .verification-result, 
+           а остальные классы переопределяем для соответствия цветовой палитре. */
+        .status-checking { background-color: var(--color-status-warn); color: var(--color-text-dark); }
+        .status-success { background-color: var(--color-status-up); color: var(--color-text-light); }
+        .status-error { background-color: var(--color-status-down); color: var(--color-text-light); }
     </style>
 </head>
 <body>
+    
+    {# =================================================================
+       1. ШАПКА И НАВИГАЦИЯ (Использование классов .navbar и .logo)
+       ================================================================= #}
     <header>
-        <nav>
-            <a href="index.html">{{ L.nav_main }}</a>
-            <a href="full_rates.html">{{ L.nav_all_rates }}</a>
-            <a href="about.html">{{ L.nav_about }}</a>
-            <a href="status.html">{{ L.nav_status | default('Статус') }}</a> 
-        </nav>
+        <div class="container navbar">
+            <div class="logo">TengeHub</div> 
+            
+            <nav>
+                <a href="index.html">{{ L.nav_main }}</a>
+                <a href="full_rates.html">{{ L.nav_all_rates }}</a>
+                <a href="about.html">{{ L.nav_about }}</a>
+                <a href="status.html">{{ L.nav_status | default('Статус') }}</a> 
+            </nav>
+            <div></div>
+        </div>
     </header>
     
+    {# =================================================================
+       2. ОСНОВНОЙ КОНТЕНТ (Использование класса .container)
+       ================================================================= #}
     <div class="container">
-        <h1>{{ L.verify_h2 }}</h1>
+        
+        <h1 style="text-align: center; margin-bottom: 30px;">{{ L.verify_h2 | default('Подтверждение данных') }}</h1>
 
-        {# ⭐ ДОБАВЛЕН БЛОК QR-КОДА (ранее отсутствовал) #}
-        <div class="qr-box">
+        {# --- БЛОК QR-КОДА (Строгий дизайн) --- #}
+        <section class="qr-box">
             
             <div class="qr-image-wrapper">
                 <img 
-                    {# КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Использование Base64-строки с префиксом #}
+                    {# Передача Base64-строки для отображения QR-кода #}
                     src="data:image/png;base64,{{ global_qr_code_base64 }}" 
                     alt="QR Code для верификации курсов" 
                     class="qr-image"
                 >
-                <p style="text-align: center; font-size: 0.9em; margin-top: 5px;">QR Code для верификации курсов</p>
+                <p style="text-align: center; font-size: 0.85em; margin-top: 5px; color: var(--color-text-secondary);">
+                    QR-код для верификации
+                </p>
             </div>
 
             <div>
-                <p>Для целей бухгалтерского и налогового учета: Моментальная верификация данных с официальным источником НБ РК.</p>
-                <p>Отсканируйте QR-код для подтверждения актуальности курсов на <strong>{{ course_date }}</strong>.</p>
-                <p>Наведите камеру или сканер для перехода на страницу официального подтверждения.</p>
+                <h2 style="margin-top: 0; color: var(--color-brand-primary);">
+                    {{ L.verify_callout_h2 | default('Официальное подтверждение курсов') }}
+                </h2>
+                <p style="color: var(--color-text-primary);">
+                    Для целей бухгалтерского и налогового учета: Моментальная верификация данных с официальным источником НБ РК.
+                </p>
+                <p style="font-weight: bold;">
+                    Отсканируйте QR-код для подтверждения актуальности курсов на <span style="color: var(--color-brand-secondary);">{{ course_date }}</span>.
+                </p>
             </div>
-        </div>
-        {# КОНЕЦ ДОБАВЛЕННОГО БЛОКА #}
+        </section>
 
+        {# --- БЛОК СТАТУСА ВЕРИФИКАЦИИ (Динамический, управляется JS) --- #}
         <div id="verification-status" class="verification-result status-checking">
-            {{ L.verify_status_checking }}
+            {{ L.verify_status_checking | default('Идет проверка данных с Национальным Банком РК...') }}
         </div>
         
-        <table class="data-table">
-            <tr>
-                <th>{{ L.verify_source }}</th>
-                <td id="data-source">Национальный Банк Республики Казахстан (НБ РК)</td>
-            </tr>
-            <tr>
-                <th>{{ L.verify_date }}</th>
-                <td id="verify-date">...</td>
-            </tr>
-            <tr>
-                <th>{{ L.verify_code }}</th>
-                <td id="verify-code">...</td>
-            </tr>
-            <tr>
-                <th>{{ L.verify_rate }}</th>
-                <td id="verify-rate">...</td>
-            </tr>
-        </table>
-
-        <p class="disclaimer">
-            {{ L.verify_disclaimer }}
+        {# --- ТАБЛИЦА ВЕРИФИКАЦИОННЫХ ДЕТАЛЕЙ (Использование .data-table) --- #}
+        <section class="card" style="padding: 0; margin-top: 40px;">
+            <table class="data-table">
+                <tbody>
+                    <tr>
+                        <th style="text-align: left;">{{ L.verify_source | default('Официальный источник') }}</th>
+                        <td id="data-source">Национальный Банк Республики Казахстан (НБ РК)</td>
+                    </tr>
+                    <tr>
+                        <th style="text-align: left;">{{ L.verify_date | default('Запрошенная дата курсов') }}</th>
+                        <td id="verify-date">...</td>
+                    </tr>
+                    <tr>
+                        <th style="text-align: left;">{{ L.verify_code | default('Проверяемый код валюты') }}</th>
+                        <td id="verify-code">...</td>
+                    </tr>
+                    <tr>
+                        <th style="text-align: left;">{{ L.verify_rate | default('Курс, полученный от НБ РК') }}</th>
+                        <td id="verify-rate" style="font-weight: bold; color: var(--color-brand-secondary);">...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <p class="disclaimer" style="text-align: center; margin-top: 40px; color: var(--color-text-secondary);">
+            {{ L.verify_disclaimer | default('Вся информация, полученная в результате верификации, основывается на данных, предоставляемых официальным API Национального Банка РК в реальном времени.') }}
         </p>
     </div>
     
+    {# =================================================================
+       3. ПОДВАЛ (Использование тега <footer> и стилей из main.css)
+       ================================================================= #}
+    <footer>
+        <div class="container">
+            <p>
+                &copy; {{ now().strftime('%Y') | default('2025') }} TengeHub. 
+                <span style="font-weight: 600;">{{ L.source_p | default('Источник: НБ РК.') }}</span>
+            </p>
+        </div>
+    </footer>
+    
+    {# =================================================================
+       4. JS ДЛЯ ВЕРИФИКАЦИИ (Функционал сохранен)
+       ================================================================= #}
     <script>
-        // Код API-сервиса НБ РК, используемый в data_fetcher.py
         const NBK_API_URL = "https://nationalbank.kz/rss/get_rates.cfm"; 
         
-        // Получение параметров из URL
         const urlParams = new URLSearchParams(window.location.search);
-        const dateParam = urlParams.get('d'); // Дата (DD.MM.YYYY)
-        const codeParam = urlParams.get('c'); // Код валюты (USD, EUR)
-        const langCode = '{{ L.language_code | default("ru") }}'; // Код языка для сообщений
+        const dateParam = urlParams.get('d'); 
+        const codeParam = urlParams.get('c'); 
+        const langCode = '{{ L.language_code | default("ru") }}'; 
 
         const statusElement = document.getElementById('verification-status');
         const dateElement = document.getElementById('verify-date');
         const codeElement = document.getElementById('verify-code');
         const rateElement = document.getElementById('verify-rate');
 
-        // Отображаем полученные параметры, пока не получим ответ
+        // Отображаем полученные параметры
         dateElement.textContent = dateParam || 'N/A';
         codeElement.textContent = codeParam || 'N/A (Проверка всей даты)';
         
-        // --- ФУНКЦИЯ ПАРСИНГА XML (упрощенная версия data_parser.py для JS) ---
+        // --- ФУНКЦИЯ ПАРСИНГА XML (упрощенная версия) ---
         function parseXmlAndFindRate(xmlText, currencyCode) {
-            // ⭐ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Удаление преамбулы перед парсингом XML
             let cleanXmlText = xmlText.trim();
             const xmlStart = cleanXmlText.indexOf('<rates>');
             if (xmlStart > 0) {
@@ -197,9 +181,7 @@
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(cleanXmlText, "text/xml");
             
-            // Проверка на ошибку парсинга
             if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
-                console.error("XML Parse Error:", xmlDoc.getElementsByTagName("parsererror")[0].textContent);
                 return null;
             }
 
@@ -212,22 +194,20 @@
                 const rateText = item.getElementsByTagName('description')[0]?.textContent;
                 
                 if (code === currencyCode) {
-                    // Замена запятой на точку и парсинг числа
                     const rate = rateText ? parseFloat(rateText.replace(',', '.')) : null;
                     return rate;
                 }
             }
 
-            // Проверка наличия даты в теге <date> (согласно структуре XML)
-            const dateElement = xmlDoc.getElementsByTagName('date')[0]?.textContent;
+            // Проверка наличия даты в теге <date> (для проверки всей страницы)
+            const dateInXml = xmlDoc.getElementsByTagName('date')[0]?.textContent;
             
-            if (!currencyCode && dateElement === dateParam) {
+            if (!currencyCode && dateInXml === dateParam) {
                  return 'DATE_FOUND';
             }
             
-            return null; // Курс или дата не найдены
+            return null; 
         }
-
 
         // --- ФУНКЦИЯ ВЕРИФИКАЦИИ ---
         async function verifyRate() {
@@ -238,7 +218,7 @@
             }
 
             try {
-                // Выполняем запрос к НБ РК с датой (API требует fdate)
+                // Запрос к НБ РК
                 const response = await fetch(`${NBK_API_URL}?fdate=${dateParam}`);
                 
                 if (!response.ok) {
@@ -247,7 +227,7 @@
 
                 const xmlText = await response.text();
 
-                // ⭐ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Проверка на JSON-ошибку (как в data_fetcher.py)
+                // Проверка на JSON-ошибку (API может вернуть JSON-ошибку вместо XML)
                 if (xmlText.trim().startsWith('{') && xmlText.trim().endsWith('}')) {
                     const errorJson = JSON.parse(xmlText);
                     if (errorJson.message) {
@@ -261,34 +241,33 @@
                     // Проверяем конкретный курс
                     foundRate = parseXmlAndFindRate(xmlText, codeParam);
                 } else {
-                    // Проверяем, что НБ РК вернул данные на запрошенную дату (проверка всей страницы)
+                    // Проверяем, что НБ РК вернул данные на запрошенную дату
                     foundRate = parseXmlAndFindRate(xmlText);
                 }
 
                 if (foundRate === 'DATE_FOUND') {
                     // Успешная верификация всей страницы
                     statusElement.className = 'verification-result status-success';
-                    statusElement.textContent = '{{ L.verify_status_success }} (Подтверждена актуальность данных на дату)';
+                    statusElement.textContent = '{{ L.verify_status_success | default("Верификация успешна!") }} (Подтверждена актуальность данных на дату)';
                     rateElement.textContent = 'ВСЕ КУРСЫ ПОДТВЕРЖДЕНЫ';
                 } else if (typeof foundRate === 'number') {
                     // Успешная верификация конкретного курса
                     statusElement.className = 'verification-result status-success';
-                    statusElement.textContent = '{{ L.verify_status_success }}';
-                    rateElement.textContent = foundRate.toFixed(4); // Форматируем для отображения
+                    statusElement.textContent = '{{ L.verify_status_success | default("Верификация успешна!") }}';
+                    rateElement.textContent = foundRate.toFixed(4); 
                 } else {
-                    // Курс не найден в ответе API
+                    // Курс не найден
                     statusElement.className = 'verification-result status-error';
-                    statusElement.textContent = '{{ L.verify_status_not_found }}';
+                    statusElement.textContent = '{{ L.verify_status_not_found | default("Курс или дата не найдены в официальном источнике.") }}';
                 }
 
             } catch (error) {
-                console.error("Verification failed:", error);
                 statusElement.className = 'verification-result status-error';
-                statusElement.textContent = `{{ L.verify_status_error }} (Ошибка: ${error.message || 'API или сети'})`;
+                statusElement.textContent = `{{ L.verify_status_error | default("Произошла ошибка верификации.") }} (Ошибка: ${error.message || 'API или сети'})`;
             }
         }
 
-        // Запуск верификации при загрузке страницы
+        // Запуск верификации
         verifyRate();
     </script>
 </body>
