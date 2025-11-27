@@ -157,14 +157,14 @@
 
     </div>
     
-    {# =================================================================
-       6. ПОДВАЛ (Использование тега <footer> и стилей из main.css)
+{# =================================================================
+       6. НИЖНИЙ ФУТЕР (Минималистичный шаблон)
        ================================================================= #}
     <footer>
-        <div class="container">
-            <p>
-                &copy; {% if now is defined %}{{ now().strftime('%Y') | default('2025') }}{% else %}2025{% endif %} TengeHub. 
-                <span style="font-weight: 600;">{{ L.source_p | default('Данные предоставлены НБ РК.') }}</span>
+        <div class="container footer-minimal-content">
+            <p class="footer-source-text">
+                &copy; {{ now().strftime('%Y') | default('2025') }} TengeHub. 
+                <span class="source-info">{{ L.footer_data_source | default('Данные получены с официального SOAP-сервиса Национального Банка РК.') }}</span>
             </p>
         </div>
     </footer>
