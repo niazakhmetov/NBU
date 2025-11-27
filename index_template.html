@@ -136,22 +136,13 @@
     </main>
     
     {# =================================================================
-       3. ПОДВАЛ (Новый корпоративный текст)
+       3. НИЖНИЙ ФУТЕР (Минималистичный шаблон)
        ================================================================= #}
     <footer>
-        <div class="container">
-            {# ⭐ Раздел партнеров, сохраненный из вашего кода #}
-            <h3>{{ L.partner_title | default('Наши партнеры') }}</h3>
-            <p>{{ L.partner_text | default('Мы сотрудничаем с ведущими финансовыми организациями.') }}</p>
-            <p style="margin-bottom: 20px;">
-                <a href="about.html">{{ L.partner_cta | default('Узнать больше') }}</a>
-            </p>
-            
-            <hr style="border-top: 1px solid var(--color-border-primary); margin: 15px 0;">
-            
-            {# ⭐ Новый подробный текст футера #}
-            <p style="font-size: 0.9em; line-height: 1.4; color: var(--color-text-secondary);">
-                &copy; {{ now().strftime('%Y') | default('2025') }} TengeHub. Ресурс создан для обеспечения **бухгалтеров и экономистов** официальными и точными курсами валют. Все данные поступают исключительно из **официального источника (Национальный Банк РК)**, что гарантирует их достоверность и применимость для целей учета.
+        <div class="container footer-minimal-content">
+            <p class="footer-source-text">
+                &copy; {{ now().strftime('%Y') | default('2025') }} TengeHub. 
+                <span class="source-info">{{ L.footer_data_source | default('Данные получены с официального SOAP-сервиса Национального Банка РК.') }}</span>
             </p>
         </div>
     </footer>
