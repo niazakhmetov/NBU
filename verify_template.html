@@ -43,6 +43,28 @@
             text-align: center;
             margin-bottom: 20px;
         }
+        /* Стиль для блока QR-кода */
+        .qr-box {
+            padding: 20px; 
+            border: 1px solid #b3e5fc; 
+            border-radius: 6px; 
+            margin-bottom: 20px; 
+            background-color: #e1f5fe; 
+            display: flex; 
+            align-items: flex-start;
+        }
+        .qr-image-wrapper {
+            margin-right: 20px; 
+            border: 1px solid #ccc; 
+            padding: 5px;
+            flex-shrink: 0;
+        }
+        .qr-image {
+            width: 150px; 
+            height: 150px; 
+            display: block;
+        }
+        /* Конец стиля для QR-кода */
         .verification-result {
             padding: 25px;
             border-radius: 6px;
@@ -60,6 +82,7 @@
             width: 100%;
             border: 1px solid #eee;
             border-radius: 4px;
+            border-collapse: collapse; /* Добавлено для лучшего вида */
         }
         .data-table th, .data-table td {
             padding: 12px;
@@ -87,13 +110,33 @@
             <a href="index.html">{{ L.nav_main }}</a>
             <a href="full_rates.html">{{ L.nav_all_rates }}</a>
             <a href="about.html">{{ L.nav_about }}</a>
-            {# ⭐ ИСПРАВЛЕНИЕ 1: Использование переменной L #}
             <a href="status.html">{{ L.nav_status | default('Статус') }}</a> 
         </nav>
     </header>
     
     <div class="container">
         <h1>{{ L.verify_h2 }}</h1>
+
+        {# ⭐ ДОБАВЛЕН БЛОК QR-КОДА (ранее отсутствовал) #}
+        <div class="qr-box">
+            
+            <div class="qr-image-wrapper">
+                <img 
+                    {# КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Использование Base64-строки с префиксом #}
+                    src="data:image/png;base64,{{ global_qr_code_base64 }}" 
+                    alt="QR Code для верификации курсов" 
+                    class="qr-image"
+                >
+                <p style="text-align: center; font-size: 0.9em; margin-top: 5px;">QR Code для верификации курсов</p>
+            </div>
+
+            <div>
+                <p>Для целей бухгалтерского и налогового учета: Моментальная верификация данных с официальным источником НБ РК.</p>
+                <p>Отсканируйте QR-код для подтверждения актуальности курсов на <strong>{{ course_date }}</strong>.</p>
+                <p>Наведите камеру или сканер для перехода на страницу официального подтверждения.</p>
+            </div>
+        </div>
+        {# КОНЕЦ ДОБАВЛЕННОГО БЛОКА #}
 
         <div id="verification-status" class="verification-result status-checking">
             {{ L.verify_status_checking }}
@@ -144,12 +187,19 @@
         
         // --- ФУНКЦИЯ ПАРСИНГА XML (упрощенная версия data_parser.py для JS) ---
         function parseXmlAndFindRate(xmlText, currencyCode) {
+            // ⭐ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Удаление преамбулы перед парсингом XML
+            let cleanXmlText = xmlText.trim();
+            const xmlStart = cleanXmlText.indexOf('<rates>');
+            if (xmlStart > 0) {
+                cleanXmlText = cleanXmlText.substring(xmlStart);
+            }
+
             const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+            const xmlDoc = parser.parseFromString(cleanXmlText, "text/xml");
             
             // Проверка на ошибку парсинга
             if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
-                console.error("XML Parse Error");
+                console.error("XML Parse Error:", xmlDoc.getElementsByTagName("parsererror")[0].textContent);
                 return null;
             }
 
@@ -159,7 +209,6 @@
                 const item = items[i];
                 const code = item.getElementsByTagName('title')[0]?.textContent;
                 
-                // ⭐ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ 2: Курс находится в теге <description>, а не <rate>
                 const rateText = item.getElementsByTagName('description')[0]?.textContent;
                 
                 if (code === currencyCode) {
@@ -189,7 +238,7 @@
             }
 
             try {
-                // Выполняем запрос к НБ РК с датой
+                // Выполняем запрос к НБ РК с датой (API требует fdate)
                 const response = await fetch(`${NBK_API_URL}?fdate=${dateParam}`);
                 
                 if (!response.ok) {
@@ -197,6 +246,14 @@
                 }
 
                 const xmlText = await response.text();
+
+                // ⭐ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Проверка на JSON-ошибку (как в data_fetcher.py)
+                if (xmlText.trim().startsWith('{') && xmlText.trim().endsWith('}')) {
+                    const errorJson = JSON.parse(xmlText);
+                    if (errorJson.message) {
+                        throw new Error(`API Error: ${errorJson.message}`);
+                    }
+                }
                 
                 let foundRate = null;
                 
@@ -227,7 +284,7 @@
             } catch (error) {
                 console.error("Verification failed:", error);
                 statusElement.className = 'verification-result status-error';
-                statusElement.textContent = '{{ L.verify_status_error }} (Ошибка API или сети)';
+                statusElement.textContent = `{{ L.verify_status_error }} (Ошибка: ${error.message || 'API или сети'})`;
             }
         }
 
