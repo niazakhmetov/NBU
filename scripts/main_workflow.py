@@ -60,8 +60,9 @@ def run_workflow():
     
     try:
         # 1. Получение и парсинг данных
-        # Вызов без fdate возвращает курсы на последнюю доступную дату
-        xml_data = fetch_rates_xml()
+        # ⭐ ИСПРАВЛЕНИЕ КОММЕНТАРИЯ: Вызов без fdate теперь использует текущую системную дату 
+        # (логика реализована в data_fetcher.py), так как API требует этот параметр.
+        xml_data = fetch_rates_xml() 
         course_data = parse_rates_xml(xml_data)
         
         if not course_data or not course_data.get('rates'):
@@ -84,6 +85,7 @@ def run_workflow():
         
     except (RequestException, ValueError, Exception) as e:
         # Ловим все критические ошибки и устанавливаем статус "ERROR"
+        # RequestException теперь также включает ошибки JSON-ответа от API.
         print(f"Критическая ошибка: Не удалось получить или обработать данные. {e}")
         system_status = "ERROR"
 
@@ -136,7 +138,6 @@ def run_workflow():
         # Если произошла ошибка генерации (например, отсутствует шаблон), это не меняет system_status,
         # но должно быть зафиксировано.
         print(f"Критическая ошибка при генерации HTML: {e}")
-        # Если status.html не был сгенерирован, это может быть проблемой.
         
     print("--- Генерация всех статических страниц завершена. ---")
     
