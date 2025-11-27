@@ -91,13 +91,13 @@
        3. НИЖНИЙ ФУТЕР (Минималистичный шаблон)
        ================================================================= #}
     <footer>
-        <div class="container footer-minimal-content">
-            <p class="footer-source-text">
-                &copy; {{ now().strftime('%Y') | default('2025') }} TengeHub. 
-                <span class="source-info">{{ L.footer_data_source | default('Данные получены с официального SOAP-сервиса Национального Банка РК.') }}</span>
-            </p>
-        </div>
-    </footer>
+        <div class="container footer-minimal-content">
+            <p class="footer-source-text">
+                &copy; {{ now().strftime('%Y') | default('2025') }} TengeHub. 
+                <span class="source-info" data-key="footer_data_source">{{ L.footer_data_source | default('Данные получены с официального SOAP-сервиса Национального Банка РК.') }}</span>
+            </p>
+        </div>
+    </footer>
 
     {# =================================================================
        4. JS ДЛЯ МУЛЬТИЯЗЫЧНОСТИ (Сохранен без изменений функционала)
