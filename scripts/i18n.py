@@ -11,7 +11,7 @@ MESSAGES = {
         'nav_status': 'Статус',
         'nav_verify_title': 'Подтверждение курса валют',
         
-        # --- ОБЩИЕ ПЕРЕМЕННЫЕ КУРСОВ ---
+        # --- ОБЩИЕ ПЕРЕМЕННЫЕ КУРСОВ / ФУТЕР ---
         'data_actual_on': 'Курсы валют актуальны на',
         'description': 'Интеграция с официальным SOAP-сервисом Национального Банка РК. Курсы обновляются ежедневно.',
         'CURRENCY_NAME': 'ВАЛЮТА (НАЗВАНИЕ)',
@@ -21,6 +21,8 @@ MESSAGES = {
         'partner_text': 'Если вы заинтересованы в интеграции данных или партнерстве, свяжитесь с нами.',
         'partner_cta': 'Связаться',
         'source_p': 'Все данные поступают исключительно из официального источника (Национальный Банк РК), что гарантирует их достоверность.',
+        'source_p_short': 'Источник: НБ РК.',
+        'copyright_full_text': 'Ресурс создан для обеспечения бухгалтеров и экономистов официальными и точными курсами валют. Все данные поступают исключительно из официального источника (Национальный Банк РК), что гарантирует их достоверность и применимость для целей учета.', # ⭐ ДОБАВЛЕНО
 
         # --- index_template.html ---
         'qr_verification_text': 'Для целей бухгалтерского и налогового учета: Моментальная верификация данных с официальным источником НБ РК. Отсканируйте QR-код для подтверждения актуальности курсов на',
@@ -64,6 +66,7 @@ MESSAGES = {
         # --- about_template.html ---
         'about_h2': 'О проекте TengeHub',
         'about_p1': 'TengeHub — это некоммерческий проект, созданный для предоставления актуальных официальных курсов валют Национального Банка Республики Казахстан в удобном и быстром формате.',
+        'about_p2': 'Мы стремимся предоставить надежный инструмент для бухгалтерского учета, аудита и анализа рыночных данных.', # ⭐ ДОБАВЛЕНО
         'tech_h3': 'Как это работает',
         'tech_step1_h': '1. Источник данных:',
         'tech_step1_p': 'Мы используем официальный SOAP-сервис Национального Банка РК для получения исходных данных.',
@@ -84,7 +87,7 @@ MESSAGES = {
         'nav_status': 'Мәртебе',
         'nav_verify_title': 'Валюта бағамын растау',
 
-        # --- ОБЩИЕ ПЕРЕМЕННЫЕ КУРСОВ ---
+        # --- ОБЩИЕ ПЕРЕМЕННЫЕ КУРСОВ / ФУТЕР ---
         'data_actual_on': 'Валюта бағамдары мына күнге өзекті',
         'description': 'ҚР Ұлттық Банкінің ресми SOAP-сервисімен интеграция. Бағамдар күн сайын жаңартылады.',
         'CURRENCY_NAME': 'ВАЛЮТА (АТАУЫ)',
@@ -94,6 +97,8 @@ MESSAGES = {
         'partner_text': 'Егер сіз деректерді біріктіруге немесе серіктестікке қызығушылық танытсаңыз, бізге хабарласыңыз.',
         'partner_cta': 'Хабарласу',
         'source_p': 'Барлық деректер тек ресми көзден (ҚР Ұлттық Банкі) алынады, бұл олардың дұрыстығына кепілдік береді.',
+        'source_p_short': 'Дереккөз: ҚР ҰБ.', # ⭐ ДОБАВЛЕНО
+        'copyright_full_text': 'Ресурс бухгалтерлер мен экономистерді ресми және нақты валюта бағамдарымен қамтамасыз ету үшін құрылған. Барлық деректер тек ресми көзден (ҚР Ұлттық Банкі) алынады, бұл олардың дұрыстығына және есеп мақсаттарына қолданылуына кепілдік береді.', # ⭐ ДОБАВЛЕНО
 
         # --- index_template.html ---
         'qr_verification_text': 'Бухгалтерлік және салықтық есепке алу мақсатында: ҚР ҰБ ресми дереккөзімен деректерді тексеру. Ағымдағы бағамдардың өзектілігін растау үшін QR-кодты сканерлеңіз',
@@ -137,6 +142,7 @@ MESSAGES = {
         # --- about_template.html ---
         'about_h2': 'TengeHub жобасы туралы',
         'about_p1': 'TengeHub — Қазақстан Республикасы Ұлттық Банкінің нақты ресми валюта бағамдарын ыңғайлы және жылдам форматта ұсыну үшін құрылған коммерциялық емес жоба.',
+        'about_p2': 'Біз бухгалтерлік есеп, аудит және нарықтық деректерді талдау үшін сенімді құралды ұсынуға тырысамыз.', # ⭐ ДОБАВЛЕНО
         'tech_h3': 'Қалай жұмыс істейді',
         'tech_step1_h': '1. Дереккөз:',
         'tech_step1_p': 'Біз бастапқы деректерді алу үшін ҚР Ұлттық Банкінің ресми SOAP-сервисін қолданамыз.',
@@ -157,7 +163,7 @@ MESSAGES = {
         'nav_status': 'Status',
         'nav_verify_title': 'Currency Rate Verification',
 
-        # --- ОБЩИЕ ПЕРЕМЕННЫЕ КУРСОВ ---
+        # --- ОБЩИЕ ПЕРЕМЕННЫЕ КУРСОВ / ФУТЕР ---
         'data_actual_on': 'Exchange rates are actual as of',
         'description': 'Integration with the official SOAP service of the National Bank of Kazakhstan. Rates are updated daily.',
         'CURRENCY_NAME': 'CURRENCY (NAME)',
@@ -167,6 +173,8 @@ MESSAGES = {
         'partner_text': 'If you are interested in data integration or partnership, feel free to contact us.',
         'partner_cta': 'Contact Us',
         'source_p': 'All data comes exclusively from the official source (National Bank of Kazakhstan), guaranteeing its accuracy.',
+        'source_p_short': 'Source: NBK.', # ⭐ ДОБАВЛЕНО
+        'copyright_full_text': 'The resource is designed to provide accountants and economists with official and accurate exchange rates. All data comes exclusively from the official source (National Bank of Kazakhstan), guaranteeing its reliability and applicability for accounting purposes.', # ⭐ ДОБАВЛЕНО
 
         # --- index_template.html ---
         'qr_verification_text': 'For accounting and tax purposes: Instant data verification with the official NBK source. Scan the QR code to confirm the rates are current as of',
@@ -210,6 +218,7 @@ MESSAGES = {
         # --- about_template.html ---
         'about_h2': 'About the TengeHub Project',
         'about_p1': 'TengeHub is a non-commercial project created to provide the current official exchange rates of the National Bank of the Republic of Kazakhstan in a convenient and fast format.',
+        'about_p2': 'We strive to provide a reliable tool for accounting, auditing, and market data analysis.', # ⭐ ДОБАВЛЕНО
         'tech_h3': 'How It Works',
         'tech_step1_h': '1. Data Source:',
         'tech_step1_p': 'We use the official SOAP service of the National Bank of Kazakhstan to retrieve the raw data.',
@@ -221,3 +230,4 @@ MESSAGES = {
         'contact_cta': 'Contact us for partnership.',
     },
 }
+```
