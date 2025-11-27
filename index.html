@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>{{ MESSAGES['ru']['title'] }}</title>
+    
     <link rel="stylesheet" href="assets/style.css"> 
 </head>
 <body>
+    
     <header>
         <h1 data-key="title">{{ MESSAGES['ru']['title'] }}</h1> 
         
         <nav>
             <a href="index.html" data-key="nav_main">{{ MESSAGES['ru']['nav_main'] }}</a>
             <a href="full_rates.html" data-key="nav_all_rates">{{ MESSAGES['ru']['nav_all_rates'] }}</a>
+            <a href="status.html" data-key="nav_status">{{ MESSAGES['ru']['nav_status'] | default('Статус') }}</a>
             <a href="about.html" data-key="nav_about">{{ MESSAGES['ru']['nav_about'] }}</a>
         </nav>
         
@@ -48,62 +52,76 @@
                     <td class="{{ rate.diff_class | default('neutral') }}">
                         {{ "%+.4f" | format(rate.diff | default(0)) }} 
                         <span class="diff-indicator">
-                             {% if rate.diff > 0 %} ▲ 
-                             {% elif rate.diff < 0 %} ▼ 
-                             {% else %} - 
-                             {% endif %}
+                            {% if rate.diff > 0 %} ▲ 
+                            {% elif rate.diff < 0 %} ▼ 
+                            {% else %} - 
+                            {% endif %}
                         </span>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        
+    </main>
+
+    <footer>
         <hr>
         
-        <section>
+        <section class="partner-info">
             <h2 data-key="partner_title">{{ MESSAGES['ru']['partner_title'] }}</h2> 
             <p data-key="partner_text">{{ MESSAGES['ru']['partner_text'] }}</p> 
             <a href="https://forms.google.com/your-business-form" data-key="partner_cta">{{ MESSAGES['ru']['partner_cta'] }}</a> 
         </section>
-    </main>
+        
+        <p style="margin-top: 15px;">&copy; {{ now().strftime('%Y') | default('2025') }} TengeHub. {{ MESSAGES['ru']['source_p'] | default('Источник: Национальный Банк РК.') }}</p>
+    </footer>
 
     <script>
-        // Код JS для мультиязычности
-        // MESSAGES передается сюда из Flask/Django как словарь
+        // Код JS для мультиязычности (Client-side localization)
+        // MESSAGES передается сюда из Flask/Django как JSON-объект
         const MESSAGES_DATA = JSON.parse('{{ MESSAGES | tojson }}'); 
-        let currentLang = 'ru';
+        let currentLang = 'ru'; // Начальный язык
         
-        // Добавление новых ключей для навигации в случае, если они не были в MESSAGES
-        // Этот код предполагает, что 'nav_main', 'nav_all_rates', 'nav_about' существуют в MESSAGES
-        
+        // Функция для смены языка интерфейса
         function setLang(lang) {
             currentLang = lang;
             document.documentElement.lang = lang;
             
+            // Обновление всех элементов с атрибутом data-key
             document.querySelectorAll('[data-key]').forEach(element => {
                 const key = element.getAttribute('data-key');
                 if (MESSAGES_DATA[lang] && MESSAGES_DATA[lang][key]) {
                     const text = MESSAGES_DATA[lang][key];
                     if (element.tagName === 'TITLE') {
                         document.title = text;
+                    } else if (element.tagName === 'A') {
+                        // Для ссылок обновляем только textContent
+                        element.textContent = text;
                     } else {
                         element.textContent = text;
                     }
                 }
             });
             
-            // Обновление специфичного текста (часть, которая не находится в data-key)
+            // Обновление специфичного блока даты (требует особого внимания, так как содержит Jinja-переменные)
             const dateInfoElement = document.querySelector('.date-info');
-            const dateSpan = dateInfoElement ? dateInfoElement.querySelector('[data-key="data_actual_on"]') : null;
-            if (dateSpan) {
-                // Восстанавливаем оригинальный текст и дату
+            if (dateInfoElement) {
+                // Восстанавливаем оригинальный текст с правильным переводом
                 const dateText = MESSAGES_DATA[lang]['data_actual_on'] + " **{{ course_date }}** (официальная дата НБ РК).";
+                // Вставляем полный текст, включая статическое дополнение
                 dateInfoElement.innerHTML = dateText + "<br>Данные получены с официального SOAP-сервиса Национального Банка РК.";
             }
+            
+            // Дополнительная логика для выделения активной кнопки языка
+            document.querySelectorAll('#language-switcher button').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('onclick').includes(`'${lang}'`)) {
+                    btn.classList.add('active');
+                }
+            });
         }
 
-        // Установка начального языка
+        // Установка начального языка при загрузке страницы
         window.onload = () => setLang(currentLang);
     </script>
 </body>
