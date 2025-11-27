@@ -14,7 +14,24 @@
        ================================================================= #}
     <header>
         <div class="container navbar">
-            <div class="logo">TengeHub</div> 
+            
+            {# ⭐ НОВЫЙ БЛОК: Кнопки языка на месте логотипа (Для выравнивания размеров) #}
+            {# Добавлен контейнер header-controls с flex-стилями #}
+            <div class="header-controls" style="
+                display: flex;
+                align-items: center;
+                gap: 5px; /* Небольшой отступ между кнопками */
+                /* Если кнопки theme-toggle не выровнены по размеру, возможно, нужно добавить: */
+                /* width: 100px; */ 
+            ">
+                <div id="language-switcher" style="display: flex;">
+                    {# Для выравнивания размеров: добавляем класс .square-button-fix (нужно реализовать в CSS) #}
+                    <button class="theme-toggle square-button-fix" onclick="setLang('ru')" data-lang="ru">RU</button>
+                    <button class="theme-toggle square-button-fix" onclick="setLang('kz')" data-lang="kz">KZ</button>
+                    <button class="theme-toggle square-button-fix" onclick="setLang('en')" data-lang="en">EN</button>
+                </div>
+                {# Если есть кнопка смены темы, она может быть добавлена здесь #}
+            </div> 
             
             <nav>
                 <a href="index.html">{{ L.nav_main }}</a>
@@ -24,13 +41,9 @@
                 <a href="status.html">{{ L.nav_status | default('Статус') }}</a> 
             </nav>
             
-            {# ⭐ Мультиязычность: Строгое оформление #}
-            <div id="language-switcher">
-                {# Используем общий стиль кнопок из main.css (.theme-toggle, как нейтральная кнопка) #}
-                <button class="theme-toggle" onclick="setLang('ru')" data-lang="ru">RU</button>
-                <button class="theme-toggle" onclick="setLang('kz')" data-lang="kz">KZ</button>
-                <button class="theme-toggle" onclick="setLang('en')" data-lang="en">EN</button>
-            </div>
+            {# ⭐ Блок language-switcher теперь перемещен, удаляем его из старого места #}
+            {# УДАЛЕНО: <div id="language-switcher">...</div> #}
+            
         </div>
     </header>
     
