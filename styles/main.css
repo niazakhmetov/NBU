@@ -1,0 +1,227 @@
+/*
+ * TengeHub - Main Corporate Style Sheet
+ * -------------------------------------
+ * Определяет единый строгий стиль и переменные для светлой/темной тем.
+ */
+
+:root {
+    /* --- Цветовая палитра: Светлая тема (по умолчанию) --- */
+    --color-brand-primary: #004c99; /* Насыщенный корпоративный синий (акценты) */
+    --color-brand-secondary: #007bff; /* Яркий акцент/линки */
+    
+    --color-text-primary: #1a1a1a;   /* Основной текст (почти черный) */
+    --color-text-secondary: #555555; /* Вспомогательный текст (серый) */
+    --color-text-light: #ffffff;     /* Белый текст (для фона) */
+
+    --color-background-page: #f9f9f9; /* Фон страницы */
+    --color-background-card: #ffffff; /* Фон карточек/контейнеров */
+    --color-background-header: #ffffff; /* Фон шапки */
+    --color-background-nav: var(--color-brand-primary); /* Фон навигации */
+    
+    --color-border: #e0e0e0;         /* Основная граница */
+    --color-table-header: #f0f0f0;   /* Фон заголовков таблиц */
+
+    --color-status-up: #00a651;      /* Зеленый (рост) */
+    --color-status-down: #dc3545;    /* Красный (падение) */
+    --color-status-neutral: #555555; /* Нейтральный (без изменений) */
+    
+    --shadow-default: 0 4px 12px rgba(0, 0, 0, 0.05); /* Легкая тень для карточек */
+}
+
+/* --- Цветовая палитра: Темная тема --- */
+/* Применяется через JS, добавляя класс 'dark-theme' к тегу <body> */
+.dark-theme {
+    --color-brand-primary: #5da9e9;
+    --color-brand-secondary: #82c3ff;
+    
+    --color-text-primary: #e0e0e0;
+    --color-text-secondary: #b0b0b0;
+    --color-text-light: #1a1a1a;
+    
+    --color-background-page: #1f2a37; /* Темный фон страницы */
+    --color-background-card: #2f3e4e; /* Темный фон карточек */
+    --color-background-header: #2f3e4e;
+    --color-background-nav: #2f3e4e;
+    
+    --color-border: #444444;
+    --color-table-header: #3a4a5a;
+    
+    --color-status-up: #4caf50;      /* Ярко-зеленый */
+    --color-status-down: #ff6666;    /* Ярко-красный */
+}
+
+/* =================================================================
+ * 1. БАЗОВЫЕ СТИЛИ И ТИПОГРАФИКА
+ * ================================================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--color-background-page);
+    color: var(--color-text-primary);
+    line-height: 1.6;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.container {
+    width: 95%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+h1, h2, h3 {
+    color: var(--color-brand-primary);
+    margin-bottom: 0.5em;
+    font-weight: 600;
+}
+
+h1 {
+    font-size: 2.2em;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+a {
+    color: var(--color-brand-secondary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+a:hover {
+    color: var(--color-brand-primary);
+}
+
+
+/* =================================================================
+ * 2. ШАПКА И НАВИГАЦИЯ (Строгий корпоративный вид)
+ * ================================================================= */
+
+header {
+    background-color: var(--color-background-header);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+}
+
+.logo {
+    font-size: 1.6em;
+    font-weight: 700;
+    color: var(--color-brand-primary);
+}
+
+nav a {
+    color: var(--color-text-primary);
+    font-weight: 500;
+    margin-left: 25px;
+    padding: 5px 0;
+    position: relative;
+}
+
+nav a:hover, nav a.active {
+    color: var(--color-brand-secondary);
+}
+
+nav a.active::after {
+    content: '';
+    display: block;
+    height: 2px;
+    background-color: var(--color-brand-secondary);
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    right: 0;
+}
+
+/* =================================================================
+ * 3. КОНТЕЙНЕРЫ ДЛЯ ДАННЫХ И ТАБЛИЦЫ (Ключевой элемент)
+ * ================================================================= */
+
+.card {
+    background-color: var(--color-background-card);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: var(--shadow-default);
+    margin-bottom: 20px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    background-color: var(--color-background-card);
+    font-size: 0.95em;
+}
+
+.data-table th, .data-table td {
+    padding: 14px 15px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.data-table th {
+    background-color: var(--color-table-header);
+    color: var(--color-text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9em;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+    background-color: rgba(var(--color-brand-primary-rgb), 0.05); /* Адаптация для hover */
+}
+
+/* Стиль для изменения курсов (index.html) */
+.change-up {
+    color: var(--color-status-up);
+    font-weight: 700;
+}
+.change-down {
+    color: var(--color-status-down);
+    font-weight: 700;
+}
+.change-neutral {
+    color: var(--color-status-neutral);
+}
+
+/* =================================================================
+ * 4. ПОДВАЛ И УТИЛИТЫ
+ * ================================================================= */
+
+footer {
+    padding: 20px 0;
+    text-align: center;
+    font-size: 0.8em;
+    color: var(--color-text-secondary);
+    border-top: 1px solid var(--color-border);
+    margin-top: 40px;
+}
+
+/* Кнопка смены темы (для будущего использования) */
+.theme-toggle {
+    background: var(--color-table-header);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.3s;
+}
+
+.theme-toggle:hover {
+    background-color: var(--color-border);
+}
