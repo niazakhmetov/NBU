@@ -3,134 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ L.title }} | TengeHub</title>
+    <title>{{ L.title_main | default('Обменные курсы') }} | TengeHub</title>
     
-    {# ⭐ КРИТИЧЕСКОЕ ИЗМЕНЕНИЕ: Подключение единого файла стилей #}
+    {# ⭐ Подключение единого корпоративного стиля #}
     <link rel="stylesheet" href="styles/main.css">
 </head>
+{# ⭐ Инициализация темной темы, если она сохранена в localStorage. Класс dark-theme управляется JS. #}
 <body>
     
     {# =================================================================
-       1. ШАПКА И НАВИГАЦИЯ (Использование классов .navbar и .logo)
+       1. ШАПКА, НАВИГАЦИЯ И КОНТРОЛЫ
+       (Использует стили .navbar и .controls-group из main.css)
        ================================================================= #}
     <header>
         <div class="container navbar">
-            {# Заменен h1 на div.logo для чистого корпоративного вида #}
             <div class="logo">TengeHub</div> 
             
+            {# ⭐ Новый порядок навигации: Главная, Все курсы, Статус, О платформе #}
             <nav>
-                {# Устанавливаем активный класс для текущей страницы #}
-                <a href="index.html" class="active">{{ L.nav_main }}</a>
-                <a href="full_rates.html">{{ L.nav_all_rates }}</a>
-                <a href="about.html">{{ L.nav_about }}</a>
-                <a href="status.html">{{ L.nav_status }}</a> 
+                <a href="index.html" class="active">{{ L.nav_main | default('Главная') }}</a>
+                <a href="full_rates.html">{{ L.nav_all_rates | default('Все курсы') }}</a>
+                <a href="status.html">{{ L.nav_status | default('Статус') }}</a>
+                <a href="about.html">{{ L.nav_about | default('О платформе') }}</a>
             </nav>
+            
+            {# ⭐ Группа переключения языка и темы #}
+            <div class="controls-group">
+                <div id="language-switcher">
+                    {# Предполагается, что setLang() обновляет контент на странице #}
+                    <button class="theme-toggle" onclick="setLang('ru')" data-lang="ru">RU</button>
+                    <button class="theme-toggle" onclick="setLang('kz')" data-lang="kz">KZ</button>
+                    <button class="theme-toggle" onclick="setLang('en')" data-lang="en">EN</button>
+                </div>
+                {# Кнопка переключения темы: иконка обновляется через JS #}
+                <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle-btn">
+                    ☀️
+                </button>
+            </div>
         </div>
     </header>
-
-    {# =================================================================
-       2. ОСНОВНОЙ КОНТЕНТ (Использование класса .container и .card)
-       ================================================================= #}
-    <div class="container">
-        
-        <div class="card">
-            
-            {# Строгий заголовок #}
-            <h2>{{ L.h1_main_rates }}</h2>
-            
-            <p>
-                {{ L.data_actual_on }}: 
-                <span style="font-weight: 600; color: var(--color-brand-primary);">{{ course_date }}</span>
-            </p>
-            <p style="margin-bottom: 25px;">
-                {{ L.description }}
-            </p>
-
-            <section class="main-rates">
-                
-                {# Использование класса .data-table из main.css #}
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 8%;">Код</th>
-                            <th style="width: 40%;">{{ L.CURRENCY_NAME }}</th>
-                            <th style="width: 15%;">Кол-во</th>
-                            <th style="width: 25%; text-align: right;">{{ L.RATE_NAME }} (за 1 KZT)</th>
-                            <th style="width: 12%; text-align: right;">{{ L.CHANGE }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for rate in rates %}
-                        <tr>
-                            <td>{{ rate.code }}</td>
-                            <td>{{ rate.full_name }}</td>
-                            <td>{{ rate.quant }}</td>
-                            <td style="text-align: right; font-weight: 500;">{{ "%.4f" | format(rate.course) }}</td> 
-                            {# Использование классов .change-up/.change-down из main.css #}
-                            <td class="{% if rate.change > 0 %}change-up{% elif rate.change < 0 %}change-down{% else %}change-neutral{% endif %}" style="text-align: right;">
-                                {% if rate.change > 0 %}+{% endif %}
-                                {{ "%.4f" | format(rate.change) }}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <p style="text-align: right; margin-top: 20px;">
-                    <a href="full_rates.html" style="font-weight: 600;">
-                        {{ L.nav_all_rates }} &rarr;
-                    </a>
-                </p>
-            </section>
-        </div>
-        
-        {# =================================================================
-           3. БЛОК ВЕРИФИКАЦИИ (Использование классов, улучшенная структура)
-           ================================================================= #}
-        <div class="card verification-box" style="display: flex; align-items: center; background: var(--color-background-page); border: 1px solid var(--color-border);">
-            
-            <div class="qr-code" style="flex-shrink: 0; margin-right: 20px; border: 1px solid var(--color-border); padding: 5px; background: var(--color-background-card);">
-                {# ⭐ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Добавлен префикс data:image/png;base64, #}
-                <img src="data:image/png;base64,{{ global_qr_code_base64 }}" 
-                     alt="QR Code для верификации курсов" 
-                     style="width: 120px; height: 120px; display: block;">
-            </div>
-            
-            <div class="verification-text">
-                <p style="font-weight: 600; color: var(--color-brand-primary);">
-                    {{ L.qr_verification_text | safe }} <b>{{ course_date }}</b>.
-                </p>
-                <p>
-                    <small style="color: var(--color-text-secondary);">
-                        {{ L.qr_disclaimer }}
-                    </small>
-                </p>
-                <p style="margin-top: 10px;">
-                    <a href="verify.html?d={{ course_date }}" style="font-weight: 600;">
-                        Перейти на страницу верификации &rarr;
-                    </a>
-                </p>
-            </div>
-        </div>
-    </div>
     
     {# =================================================================
-       4. ПОДВАЛ (Использование тега <footer> и стилей из main.css)
+       2. ОСНОВНОЙ КОНТЕНТ
+       (Использует стили .container и .card)
+       ================================================================= #}
+    <main class="container">
+        
+        <h1 style="margin-bottom: 25px;">
+            {{ L.title_main | default('Курсы валют Национального Банка РК') }}
+        </h1>
+
+        {# --- БЛОК С ДАТОЙ И КРАТКОЙ ИНФОРМАЦИЕЙ --- #}
+        <section class="card" style="margin-top: 20px;">
+            <p style="color: var(--color-text-secondary);">
+                {{ L.date_info | default('Официальные курсы Национального Банка Республики Казахстан, действительные на:') }}
+            </p>
+            <h2 style="font-size: 1.8em; margin-top: 5px; color: var(--color-text-primary);">
+                {{ course_date | default('Нет данных') }}
+            </h2>
+            <p style="margin-top: 15px;">
+                <a href="full_rates.html" style="font-weight: 600;">
+                    {{ L.cta_all_rates | default('Посмотреть все 52 курса →') }}
+                </a>
+            </p>
+        </section>
+
+        {# --- ТАБЛИЦА КЛЮЧЕВЫХ ВАЛЮТ --- #}
+        <section class="card" style="padding: 0; margin-top: 30px;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 55%;">{{ L.table_currency | default('Валюта') }}</th>
+                        <th style="width: 15%; text-align: center;">{{ L.table_rate | default('Курс (KZT)') }}</th>
+                        <th style="width: 15%; text-align: center;">{{ L.table_quant | default('Единица') }}</th>
+                        <th style="width: 15%; text-align: right;">{{ L.table_change | default('Изменение') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {# ⭐ Итерация по данным курсов #}
+                    {% for item in key_rates %}
+                    <tr>
+                        {# Для адаптивности добавлена метка data-label, которая используется в CSS @media #}
+                        <td data-label="{{ L.table_currency | default('Валюта') }}">{{ item.fullname | default('Неизвестно') }} ({{ item.title }})</td>
+                        <td data-label="{{ L.table_rate | default('Курс (KZT)') }}" style="text-align: center;">{{ item.description }}</td>
+                        <td data-label="{{ L.table_quant | default('Единица') }}" style="text-align: center; color: var(--color-text-secondary);">{{ item.quant }}</td>
+                        
+                        {# Применение классов для изменения, используемых в styles/main.css #}
+                        <td data-label="{{ L.table_change | default('Изменение') }}" 
+                            class="{% if item.index == 'UP' %}change-up{% elif item.index == 'DOWN' %}change-down{% else %}change-neutral{% endif %}"
+                            style="text-align: right;">
+                            {{ item.change | default('0.00') }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+    </main>
+    
+    {# =================================================================
+       3. ПОДВАЛ (Унифицированный стиль из main.css)
        ================================================================= #}
     <footer>
         <div class="container">
-            <p style="margin-bottom: 10px;">
-                <a href="about.html" style="font-weight: 600; color: var(--color-brand-primary);">
-                    {{ L.partner_title }}
-                </a>
-            </p>
             <p>
-                <small>{{ L.partner_text }}</small>
-            </p>
-            <p style="margin-top: 15px;">
                 &copy; {{ now().strftime('%Y') | default('2025') }} TengeHub. 
-                <span style="font-weight: 600;">{{ L.source_p }}</span>
+                <span style="font-weight: 600;">{{ L.source_p_short | default('Источник: НБ РК.') }}</span>
             </p>
         </div>
     </footer>
+
+    {# =================================================================
+       4. JS ДЛЯ МУЛЬТИЯЗЫЧНОСТИ И ТЕМЫ
+       (Функционал управления темой сохранен, логика языка упрощена)
+       ================================================================= #}
+    <script>
+        // --- Инициализация языка (Упрощенный код, требует доработки бэкенда для смены L) ---
+        let currentLang = '{{ L.language_code | default("ru") }}'; 
+        
+        function setLang(lang) {
+            // В реальном приложении этот функционал должен перезагружать страницу 
+            // с новым параметром языка (?lang=en), чтобы Jinja (L.xxx) мог обновить тексты.
+            
+            // Здесь мы только подсвечиваем активную кнопку
+            currentLang = lang;
+            document.documentElement.lang = lang;
+            
+            document.querySelectorAll('#language-switcher button').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-lang') === lang) {
+                    btn.classList.add('active'); 
+                }
+            });
+            
+            // Внимание: для полной смены языка потребуется перезагрузка страницы
+            // window.location.href = `?lang=${lang}`; 
+        }
+        
+        // --- Переключение темы ---
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.getElementById('theme-toggle-btn');
+            
+            body.classList.toggle('dark-theme');
+            
+            const isDark = body.classList.contains('dark-theme');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            
+            // Обновление иконки кнопки
+            btn.textContent = isDark ? '🌙' : '☀️';
+        }
+
+        // --- Инициализация при загрузке ---
+        window.onload = () => {
+            // 1. Инициализация языка
+            setLang(currentLang);
+            
+            // 2. Инициализация темы
+            const savedTheme = localStorage.getItem('theme');
+            const btn = document.getElementById('theme-toggle-btn');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                btn.textContent = '🌙';
+            } else {
+                // Если тема не сохранена или 'light', устанавливаем светлую тему по умолчанию
+                btn.body.classList.remove('dark-theme');
+                btn.textContent = '☀️';
+            }
+        };
+    </script>
 </body>
 </html>
