@@ -19,17 +19,19 @@
     --color-background-nav: var(--color-brand-primary); /* Фон навигации */
     
     --color-border: #e0e0e0;         /* Основная граница */
+    --color-border-dark: #c0c0c0;    /* Более темная граница для контраста */
     --color-table-header: #f0f0f0;   /* Фон заголовков таблиц */
+    --color-status-warn: #ffc107;    /* Желтый (предупреждение) */
 
     --color-status-up: #00a651;      /* Зеленый (рост) */
     --color-status-down: #dc3545;    /* Красный (падение) */
     --color-status-neutral: #555555; /* Нейтральный (без изменений) */
     
     --shadow-default: 0 4px 12px rgba(0, 0, 0, 0.05); /* Легкая тень для карточек */
+    --border-radius: 8px; /* Единый радиус скругления */
 }
 
 /* --- Цветовая палитра: Темная тема --- */
-/* Применяется через JS, добавляя класс 'dark-theme' к тегу <body> */
 .dark-theme {
     --color-brand-primary: #5da9e9;
     --color-brand-secondary: #82c3ff;
@@ -44,8 +46,10 @@
     --color-background-nav: #2f3e4e;
     
     --color-border: #444444;
+    --color-border-dark: #666666;
     --color-table-header: #3a4a5a;
-    
+    --color-status-warn: #ffeb3b;
+
     --color-status-up: #4caf50;      /* Ярко-зеленый */
     --color-status-down: #ff6666;    /* Ярко-красный */
 }
@@ -120,6 +124,10 @@ header {
     color: var(--color-brand-primary);
 }
 
+nav {
+    display: flex; /* Обеспечивает ряд на десктопе */
+}
+
 nav a {
     color: var(--color-text-primary);
     font-weight: 500;
@@ -143,6 +151,13 @@ nav a.active::after {
     right: 0;
 }
 
+/* ⭐ НОВОЕ: Группа элементов управления (Язык/Тема) */
+.controls-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
 /* =================================================================
  * 3. КОНТЕЙНЕРЫ ДЛЯ ДАННЫХ И ТАБЛИЦЫ (Ключевой элемент)
  * ================================================================= */
@@ -150,7 +165,7 @@ nav a.active::after {
 .card {
     background-color: var(--color-background-card);
     padding: 30px;
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     box-shadow: var(--shadow-default);
     margin-bottom: 20px;
 }
@@ -181,7 +196,7 @@ nav a.active::after {
 }
 
 .data-table tbody tr:hover {
-    background-color: rgba(var(--color-brand-primary-rgb), 0.05); /* Адаптация для hover */
+    background-color: var(--color-table-header); /* Улучшенный hover-эффект */
 }
 
 /* Стиль для изменения курсов (index.html) */
@@ -198,19 +213,23 @@ nav a.active::after {
 }
 
 /* =================================================================
- * 4. ПОДВАЛ И УТИЛИТЫ
+ * 4. ПОДВАЛ И УТИЛИТЫ (Унификация стиля с шапкой)
  * ================================================================= */
 
 footer {
+    /* ⭐ ИЗМЕНЕНИЕ: Стиль футера унифицирован с шапкой */
+    background-color: var(--color-background-header); 
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.03); /* Легкая тень снизу */
+    
     padding: 20px 0;
     text-align: center;
-    font-size: 0.8em;
+    font-size: 0.85em; /* Немного увеличен для читаемости */
     color: var(--color-text-secondary);
     border-top: 1px solid var(--color-border);
     margin-top: 40px;
 }
 
-/* Кнопка смены темы (для будущего использования) */
+/* Кнопка смены темы/языка */
 .theme-toggle {
     background: var(--color-table-header);
     color: var(--color-text-primary);
@@ -219,9 +238,107 @@ footer {
     border-radius: 5px;
     cursor: pointer;
     font-size: 0.9em;
-    transition: background-color 0.3s;
+    font-weight: 600;
+    transition: background-color 0.3s, border-color 0.3s;
 }
 
 .theme-toggle:hover {
     background-color: var(--color-border);
+    border-color: var(--color-brand-secondary);
+}
+
+/* =================================================================
+ * 5. ⭐ НОВЫЙ БЛОК: АДАПТИВНЫЙ ДИЗАЙН (Responsive Web Design - RWD)
+ * ================================================================= */
+
+/* Общие корректировки для планшетов и экранов до 900px */
+@media (max-width: 900px) {
+    .container {
+        width: 98%;
+        padding: 10px 10px;
+    }
+    h1 {
+        font-size: 1.8em;
+    }
+}
+
+/* Настройки для мобильных телефонов (экраны до 768px) */
+@media (max-width: 768px) {
+    
+    .navbar {
+        flex-direction: column; /* Элементы в столбец */
+        align-items: flex-start;
+        padding: 15px 20px;
+        position: relative; 
+    }
+    
+    .logo {
+        margin-bottom: 10px;
+    }
+    
+    /* НАВИГАЦИЯ: Сворачивание и вертикальный список */
+    .navbar nav {
+        flex-direction: column;
+        width: 100%;
+        margin-top: 5px;
+        border-top: 1px solid var(--color-border);
+        padding-top: 5px;
+        order: 3; /* Размещение навигации ниже лого и контролов */
+    }
+    
+    .navbar nav a {
+        display: block;
+        padding: 10px 0;
+        margin-left: 0;
+        border-bottom: 1px solid var(--color-border);
+    }
+    
+    nav a.active::after {
+        bottom: 0; 
+        height: 1px;
+    }
+    
+    /* КНОПКИ УПРАВЛЕНИЯ: Фиксация в углу */
+    .controls-group {
+        position: absolute; 
+        top: 15px;
+        right: 15px;
+        order: 2;
+        gap: 5px;
+    }
+    
+    .theme-toggle {
+        padding: 5px 10px; /* Уменьшаем кнопки */
+    }
+    
+    /* ТАБЛИЦЫ: Адаптация для вертикального просмотра */
+    .data-table thead {
+        display: none; /* Скрываем заголовок таблицы */
+    }
+    
+    .data-table tr {
+        margin-bottom: 15px;
+        border: 1px solid var(--color-border);
+        display: block;
+        padding: 15px;
+        border-radius: var(--border-radius);
+    }
+    
+    .data-table td {
+        display: block; 
+        width: 100%;
+        text-align: left !important;
+        padding: 8px 0;
+        border-bottom: none;
+    }
+    
+    .data-table td:before {
+        /* Добавляем заголовки в качестве меток (требует data-атрибутов в HTML) */
+        content: attr(data-label); 
+        font-weight: 600;
+        display: inline-block;
+        width: 45%; 
+        padding-right: 10px;
+        color: var(--color-text-secondary);
+    }
 }
