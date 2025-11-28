@@ -20,8 +20,6 @@ permissions:
   id-token: write
 
 jobs:
-
-jobs:
   build:
     runs-on: ubuntu-latest
     
