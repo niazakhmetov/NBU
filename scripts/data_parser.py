@@ -5,9 +5,12 @@ from typing import List, Dict, Optional
 
 def parse_rates_xml(xml_data: str) -> Optional[Dict]:
     """
-    Парсит XML-данные курсов валют НБ РК.
-
-    Извлекает дату курсов и список валют с их полным именем, курсом и изменением.
+    Парсит XML-данные курсов валют НБ РК, извлекая дату курсов и список валют.
+    
+    Включает устойчивую логику для очистки "грязного" XML и проверки на отсутствие данных.
+    
+    Returns:
+        Optional[Dict]: Словарь с датой и списком курсов ('date', 'rates') или None в случае ошибки/отсутствия данных.
     """
     
     # --- КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ ДЛЯ ОШИБКИ 'not well-formed' ---
@@ -15,14 +18,12 @@ def parse_rates_xml(xml_data: str) -> Optional[Dict]:
     if xml_data.startswith('\ufeff'):
         xml_data = xml_data.lstrip('\ufeff')
     
-    # 2. Находим начало корневого элемента <rates> и обрезаем весь посторонний текст, который идет до него.
+    # 2. Находим начало корневого элемента <rates> и обрезаем весь посторонний текст.
     rates_start_index = xml_data.find('<rates>')
     
     if rates_start_index != -1:
-        # Обрезаем строку, чтобы она начиналась непосредственно с "<rates>"
         xml_data = xml_data[rates_start_index:].strip()
     else:
-        # Если тег <rates> не найден, это, вероятно, страница ошибки или пустой ответ.
         print("Критическая ошибка: Не удалось найти корневой элемент <rates> в ответе API.")
         return None
     # --- КОНЕЦ ИСПРАВЛЕНИЯ ---
@@ -33,6 +34,13 @@ def parse_rates_xml(xml_data: str) -> Optional[Dict]:
         # Парсинг очищенной XML-строки
         root = ET.fromstring(xml_data)
         
+        # 1.5. ✅ Улучшение: Проверка на тег <info> (отсутствие данных)
+        info_element = root.find('info')
+        if info_element is not None and info_element.text:
+            print(f"Парсинг завершен: Ответ НБК гласит: '{info_element.text}'. Курсов нет.")
+            # Возвращаем None, чтобы main_workflow знал, что данные невалидны
+            return None 
+            
         # 1. Извлечение даты
         date_element = root.find('date')
         course_date = date_element.text if date_element is not None else None
@@ -45,21 +53,19 @@ def parse_rates_xml(xml_data: str) -> Optional[Dict]:
         for item in root.findall('item'):
             try:
                 # Извлечение текста элементов
-                code = item.find('title').text # Код валюты
-                
-                # Курс находится в <description>
-                rate_str = item.find('description').text
-                
-                quant_str = item.find('quant').text
-                change_str = item.find('change').text
+                code = item.find('title').text          # Код валюты (KZT)
+                rate_str = item.find('description').text # Курс (например, 450,12)
+                quant_str = item.find('quant').text      # Номинал (например, 100)
+                change_str = item.find('change').text    # Изменение относительно предыдущего дня
                 
                 # Дополнительные поля
                 full_name = item.find('fullname').text if item.find('fullname') is not None else code
                 index = item.find('index').text if item.find('index') is not None else 'NO'
 
-                # Преобразование в числа. Используем replace(',', '.')
+                # Преобразование в числа. Используем replace(',', '.') для корректного парсинга
                 course = float(rate_str.replace(',', '.'))
                 quant = int(quant_str)
+                # change_str может быть пустым или '0,00'
                 change = float(change_str.replace(',', '.')) if change_str else 0.0
 
                 rates_list.append({
@@ -67,8 +73,7 @@ def parse_rates_xml(xml_data: str) -> Optional[Dict]:
                     'full_name': full_name,
                     'course': course,
                     'quant': quant, 
-                    'change': change,
-                    'rate_diff': change, 
+                    'change': change, # ✅ Используем 'change' для курсовой разницы за предыдущий день
                     'index': index
                 })
             except (AttributeError, ValueError) as item_e:
@@ -85,7 +90,6 @@ def parse_rates_xml(xml_data: str) -> Optional[Dict]:
         }
 
     except ET.ParseError as parse_e:
-        # Это сработает, если XML невалиден даже после очистки (что маловероятно для НБ РК)
         print(f"Критическая ошибка парсинга XML (внутренняя): {parse_e}")
         return None
     except Exception as e:
